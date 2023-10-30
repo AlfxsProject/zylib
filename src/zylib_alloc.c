@@ -30,7 +30,8 @@ struct zylib_alloc_s
  * Functions
  */
 
-zylib_return_t zylib_alloc_construct(zylib_alloc_t **alloc, zylib_malloc_t malloc, zylib_realloc_t realloc, zylib_free_t free)
+zylib_return_t zylib_alloc_construct(zylib_alloc_t **alloc, zylib_malloc_t malloc, zylib_realloc_t realloc,
+                                     zylib_free_t free)
 {
     *alloc = malloc(sizeof(zylib_alloc_t));
     if (*alloc != nullptr)
