@@ -39,5 +39,6 @@ typedef enum zylib_return_e
     ZYLIB_ERROR_DEADLOCK,
     ZYLIB_ERROR_UNINITIALIZED,
     ZYLIB_ERROR_BUSY,
-    ZYLIB_ERROR_PERM
+    ZYLIB_ERROR_PERM,
+    ZYLIB_ERROR_INPUT_VALUE
 } zylib_return_t;

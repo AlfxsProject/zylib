@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 #include "zylib_dequeue.h"
-#include "zylib_error.h"
+#include "zylib_err.h"
 #include <string.h>
 
 /*

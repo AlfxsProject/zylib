@@ -34,11 +34,11 @@ extern "C"
 {
 #endif
 
-    __attribute__((nonnull)) int zylib_alloc_construct(zylib_alloc_t **alloc, zylib_malloc_t malloc,
-                                                       zylib_realloc_t realloc, zylib_free_t free);
+    __attribute__((nonnull)) zylib_return_t zylib_alloc_construct(zylib_alloc_t **alloc, zylib_malloc_t malloc,
+                                                                  zylib_realloc_t realloc, zylib_free_t free);
     __attribute__((nonnull)) void zylib_alloc_destruct(zylib_alloc_t **alloc);
-    __attribute__((nonnull)) int zylib_malloc(const zylib_alloc_t *alloc, size_t size, void **ptr);
-    __attribute__((nonnull)) int zylib_realloc(const zylib_alloc_t *alloc, size_t size, void **ptr);
+    __attribute__((nonnull)) zylib_return_t zylib_malloc(const zylib_alloc_t *alloc, size_t size, void **ptr);
+    __attribute__((nonnull)) zylib_return_t zylib_realloc(const zylib_alloc_t *alloc, size_t size, void **ptr);
     __attribute__((nonnull)) void zylib_free(const zylib_alloc_t *alloc, void **ptr);
 
 #ifdef __cplusplus

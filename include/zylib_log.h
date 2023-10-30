@@ -38,7 +38,7 @@ typedef enum zylib_log_severity_e
 
 #define ZYLIB_LOG_OUTPUT_FORMAT_DEFAULT (ZYLIB_FORMAT_PLAIN)
 #define ZYLIB_LOG_OUTPUT_FORMAT_MAX (ZYLIB_FORMAT_XML)
-#define ZYLIB_LOG_PLAIN_OUTPUT_FORMAT_DEFAULT ("%s %s:%zu (%s) %s %s")
+#define ZYLIB_LOG_PLAIN_OUTPUT_FORMAT_DEFAULT ("%s %s:%zu (%s) [%s] %s")
 #define ZYLIB_LOG_CSV_OUTPUT_FORMAT_DEFAULT ("%s,%s,%zu,%s,%s,%s")
 #define ZYLIB_LOG_XML_OUTPUT_FORMAT_DEFAULT                                                                            \
     ("<message severity='%s'><date>%s</date><location file='%s' line='%zu' function='%s'/><text>%s</text></message>")
@@ -53,9 +53,12 @@ typedef enum zylib_log_severity_e
  * Macros
  */
 
-#define zy_log_error(log, format, ...) zy__log_write(log, ZY_ERROR, __FILE__, __LINE__, __func__, format, ##__VA_ARGS__)
-#define zy_log_warn(log, format, ...) zy__log_write(log, ZY_WARN, __FILE__, __LINE__, __func__, format, ##__VA_ARGS__)
-#define zy_log_info(log, format, ...) zy__log_write(log, ZY_INFO, __FILE__, __LINE__, __func__, format, ##__VA_ARGS__)
+#define zy_log_error(log, format, ...)                                                                                 \
+    zylib__log_write(log, ZY_ERROR, __FILE__, __LINE__, __func__, format, ##__VA_ARGS__)
+#define zy_log_warn(log, format, ...)                                                                                  \
+    zylib__log_write(log, ZY_WARN, __FILE__, __LINE__, __func__, format, ##__VA_ARGS__)
+#define zy_log_info(log, format, ...)                                                                                  \
+    zylib__log_write(log, ZY_INFO, __FILE__, __LINE__, __func__, format, ##__VA_ARGS__)
 
 /*
  * Functions
@@ -66,28 +69,26 @@ extern "C"
 {
 #endif
 
-    __attribute__((nonnull)) int zylib_log_construct(zylib_log_t **log, const zylib_alloc_t *alloc,
-                                                     int file_descriptor);
+    __attribute__((nonnull)) zylib_return_t zylib_log_construct(zylib_log_t **log, const zylib_alloc_t *alloc,
+                                                                int file_descriptor);
     __attribute__((nonnull)) void zylib_log_destruct(zylib_log_t **log);
 
-    __attribute__((nonnull)) bool zylib_log_set_max_message_size(zylib_log_t *log, size_t size);
+    __attribute__((nonnull)) zylib_return_t zylib_log_set_max_message_size(zylib_log_t *log, size_t size);
     __attribute__((nonnull)) size_t zylib_log_get_max_message_size(const zylib_log_t *log);
 
-    __attribute__((nonnull)) bool zylib_log_set_max_severity(zylib_log_t *log, zylib_log_severity_t max);
+    __attribute__((nonnull)) zylib_return_t zylib_log_set_max_severity(zylib_log_t *log, zylib_log_severity_t max);
     __attribute__((nonnull)) zylib_log_severity_t zylib_log_get_max_severity(const zylib_log_t *log);
 
-    __attribute__((nonnull)) bool zylib_log_set_output_format(zylib_log_t *log, zylib_format_t format);
+    __attribute__((nonnull)) zylib_return_t zylib_log_set_output_format(zylib_log_t *log, zylib_format_t format);
     __attribute__((nonnull)) zylib_format_t zylib_log_get_output_format(const zylib_log_t *log);
 
-    __attribute__((nonnull)) bool zylib_log_set_time_format(zylib_log_t *log, const char *format);
+    __attribute__((nonnull)) zylib_return_t zylib_log_set_time_format(zylib_log_t *log, const char *format);
     __attribute__((nonnull)) const char *zylib_log_get_time_format(const zylib_log_t *log);
 
     /* Internal Use Only. */
-    __attribute__((nonnull)) __attribute__((format(printf, 6, 7))) int zylib__log_write(const zylib_log_t *log,
-                                                                                        zylib_log_severity_t severity,
-                                                                                        const char *file, size_t line,
-                                                                                        const char *function,
-                                                                                        const char *format, ...);
+    __attribute__((nonnull)) __attribute__((format(printf, 6, 7))) zylib_return_t zylib__log_write(
+        const zylib_log_t *log, zylib_log_severity_t severity, const char *file, size_t line, const char *function,
+        const char *format, ...);
 
 #ifdef __cplusplus
 }

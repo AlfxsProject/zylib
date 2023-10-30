@@ -30,7 +30,7 @@ struct zylib_alloc_s
  * Functions
  */
 
-int zylib_alloc_construct(zylib_alloc_t **alloc, zylib_malloc_t malloc, zylib_realloc_t realloc, zylib_free_t free)
+zylib_return_t zylib_alloc_construct(zylib_alloc_t **alloc, zylib_malloc_t malloc, zylib_realloc_t realloc, zylib_free_t free)
 {
     *alloc = malloc(sizeof(zylib_alloc_t));
     if (*alloc != nullptr)
@@ -53,7 +53,7 @@ void zylib_alloc_destruct(zylib_alloc_t **alloc)
     }
 }
 
-int zylib_malloc(const zylib_alloc_t *alloc, size_t size, void **ptr)
+zylib_return_t zylib_malloc(const zylib_alloc_t *alloc, size_t size, void **ptr)
 {
     *ptr = alloc->malloc(size);
     if (*ptr != nullptr)
@@ -63,7 +63,7 @@ int zylib_malloc(const zylib_alloc_t *alloc, size_t size, void **ptr)
     return ZYLIB_ERROR_OOM;
 }
 
-int zylib_realloc(const zylib_alloc_t *alloc, size_t size, void **ptr)
+zylib_return_t zylib_realloc(const zylib_alloc_t *alloc, size_t size, void **ptr)
 {
     void *x_ptr = alloc->realloc(*ptr, size);
     if (x_ptr != nullptr)

@@ -30,9 +30,9 @@ struct zylib_log_s
     const char *time_format;
 };
 
-int zylib_log_construct(zylib_log_t **log, const zylib_alloc_t *alloc, int file_descriptor)
+zylib_return_t zylib_log_construct(zylib_log_t **log, const zylib_alloc_t *alloc, int file_descriptor)
 {
-    int r = zylib_malloc(alloc, sizeof(zylib_log_t), (void **)log);
+    zylib_return_t r = zylib_malloc(alloc, sizeof(zylib_log_t), (void **)log);
     if (r == ZYLIB_OK)
     {
         (*log)->alloc = alloc;
@@ -53,15 +53,14 @@ void zylib_log_destruct(zylib_log_t **log)
     }
 }
 
-bool zylib_log_set_max_message_size(zylib_log_t *log, size_t size)
+zylib_return_t zylib_log_set_max_message_size(zylib_log_t *log, size_t size)
 {
-    bool r = false;
     if (size >= ZYLIB_LOG_MAX_MESSAGE_SIZE_MIN && size <= ZYLIB_LOG_MAX_MESSAGE_SIZE_MAX)
     {
         log->max_message_size = size;
-        r = true;
+        return ZYLIB_OK;
     }
-    return r;
+    return ZYLIB_ERROR_INPUT_VALUE;
 }
 
 size_t zylib_log_get_max_message_size(const zylib_log_t *log)
@@ -70,15 +69,14 @@ size_t zylib_log_get_max_message_size(const zylib_log_t *log)
     return message_size;
 }
 
-bool zylib_log_set_max_severity(zylib_log_t *log, zylib_log_severity_t max)
+zylib_return_t zylib_log_set_max_severity(zylib_log_t *log, zylib_log_severity_t max)
 {
-    bool r = false;
     if (max <= ZYLIB_LOG_MAX_MESSAGE_SEVERITY_MAX)
     {
         log->max_severity = max;
-        r = true;
+        return ZYLIB_OK;
     }
-    return r;
+    return ZYLIB_ERROR_INPUT_VALUE;
 }
 
 zylib_log_severity_t zylib_log_get_max_severity(const zylib_log_t *log)
@@ -87,15 +85,15 @@ zylib_log_severity_t zylib_log_get_max_severity(const zylib_log_t *log)
     return max_message_type;
 }
 
-bool zylib_log_set_output_format(zylib_log_t *log, zylib_format_t format)
+zylib_return_t zylib_log_set_output_format(zylib_log_t *log, zylib_format_t format)
 {
     bool r = false;
     if (format <= ZYLIB_LOG_OUTPUT_FORMAT_MAX)
     {
         log->output_format = format;
-        r = true;
+        return ZYLIB_OK;
     }
-    return r;
+    return ZYLIB_ERROR_INPUT_VALUE;
 }
 
 zylib_format_t zylib_log_get_output_format(const zylib_log_t *log)
@@ -104,10 +102,10 @@ zylib_format_t zylib_log_get_output_format(const zylib_log_t *log)
     return output_format;
 }
 
-bool zylib_log_set_time_format(zylib_log_t *log, const char *format)
+zylib_return_t zylib_log_set_time_format(zylib_log_t *log, const char *format)
 {
     log->time_format = format;
-    return true;
+    return ZYLIB_OK;
 }
 const char *zylib_log_get_time_format(const zylib_log_t *log)
 {
@@ -119,8 +117,8 @@ const char *zylib_log_get_time_format(const zylib_log_t *log)
  * Print message
  * TIME, FILE, LINE, FUNCTION, SEVERITY, MESSAGE
  */
-int zylib__log_write(const zylib_log_t *log, zylib_log_severity_t severity, const char *file, size_t line,
-                     const char *function, const char *format, ...)
+zylib_return_t zylib__log_write(const zylib_log_t *log, zylib_log_severity_t severity, const char *file, size_t line,
+                                const char *function, const char *format, ...)
 {
     const zylib_log_severity_t max_severity = log->max_severity;
     const zylib_format_t output_format = log->output_format;
