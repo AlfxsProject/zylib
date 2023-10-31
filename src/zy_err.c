@@ -33,7 +33,11 @@ struct zylib_err_bx_s
     size_t line;
     const char *file;
     const char *function;
-    zylib_opaque_t opaque;
+    struct
+    {
+        size_t size;
+        unsigned char data[0];
+    } opaque;
 };
 
 /*
@@ -78,38 +82,48 @@ void zylib_err_clear(zylib_err_t *err)
 int zylib_err_push_first(zylib_err_t *err, int64_t code, const char *file, size_t line, const char *function,
                          const void *opaque, size_t opaque_size)
 {
-    void *data;
-    int r = zylib_malloc(err->alloc, sizeof(zylib_opaque_t) + sizeof(zylib_err_bx_t) + opaque_size, &data);
-    *(size_t *)(data + offsetof(zylib_opaque_t, size)) = sizeof(zylib_opaque_t) + sizeof(zylib_err_bx_t) + opaque_size;
-    *(int64_t *)(data + offsetof(zylib_opaque_t, data) + offsetof(zylib_err_bx_t, code)) = code;
-    *(size_t *)(data + offsetof(zylib_opaque_t, data) + offsetof(zylib_err_bx_t, line)) = line;
-    *(const char **)(data + offsetof(zylib_opaque_t, data) + offsetof(zylib_err_bx_t, file)) = file;
-    *(const char **)(data + offsetof(zylib_opaque_t, data) + offsetof(zylib_err_bx_t, function)) = function;
-    *(size_t *)(data + offsetof(zylib_opaque_t, data) + offsetof(zylib_err_bx_t, opaque) +
-                offsetof(zylib_opaque_t, size)) = opaque_size;
-    memcpy(data + offsetof(zylib_opaque_t, data) + offsetof(zylib_err_bx_t, opaque) + offsetof(zylib_opaque_t, data),
-           opaque, opaque_size);
-    zylib_dequeue_push_first(err->dequeue, (const zylib_opaque_t *)data);
-    zylib_free(err->alloc, &data);
+    struct
+    {
+        size_t size;
+        zylib_err_bx_t bx;
+    } *buf;
+    int r = zylib_malloc(err->alloc, sizeof(zylib_opaque_t) + sizeof(zylib_err_bx_t) + opaque_size, (void **)&buf);
+    if (r == ZYLIB_OK)
+    {
+        buf->size = sizeof(zylib_opaque_t) + sizeof(zylib_err_bx_t) + opaque_size;
+        buf->bx.code = code;
+        buf->bx.line = line;
+        buf->bx.file = file;
+        buf->bx.function = function;
+        buf->bx.opaque.size = opaque_size;
+        memcpy((void *)&buf->bx.opaque.data, opaque, opaque_size);
+        r = zylib_dequeue_push_first(err->dequeue, (const zylib_opaque_t *)buf);
+        zylib_free(err->alloc, (void **)&buf);
+    }
     return r;
 }
 
 int zylib_err_push_last(zylib_err_t *err, int64_t code, const char *file, size_t line, const char *function,
                         const void *opaque, size_t opaque_size)
 {
-    void *data;
-    int r = zylib_malloc(err->alloc, sizeof(zylib_opaque_t) + sizeof(zylib_err_bx_t) + opaque_size, &data);
-    *(size_t *)(data + offsetof(zylib_opaque_t, size)) = sizeof(zylib_opaque_t) + sizeof(zylib_err_bx_t) + opaque_size;
-    *(int64_t *)(data + offsetof(zylib_opaque_t, data) + offsetof(zylib_err_bx_t, code)) = code;
-    *(size_t *)(data + offsetof(zylib_opaque_t, data) + offsetof(zylib_err_bx_t, line)) = line;
-    *(const char **)(data + offsetof(zylib_opaque_t, data) + offsetof(zylib_err_bx_t, file)) = file;
-    *(const char **)(data + offsetof(zylib_opaque_t, data) + offsetof(zylib_err_bx_t, function)) = function;
-    *(size_t *)(data + offsetof(zylib_opaque_t, data) + offsetof(zylib_err_bx_t, opaque) +
-                offsetof(zylib_opaque_t, size)) = opaque_size;
-    memcpy(data + offsetof(zylib_opaque_t, data) + offsetof(zylib_err_bx_t, opaque) + offsetof(zylib_opaque_t, data),
-           opaque, opaque_size);
-    zylib_dequeue_push_last(err->dequeue, (const zylib_opaque_t *)data);
-    zylib_free(err->alloc, &data);
+    struct
+    {
+        size_t size;
+        zylib_err_bx_t bx;
+    } *buf;
+    int r = zylib_malloc(err->alloc, sizeof(zylib_opaque_t) + sizeof(zylib_err_bx_t) + opaque_size, (void **)&buf);
+    if (r == ZYLIB_OK)
+    {
+        buf->size = sizeof(zylib_opaque_t) + sizeof(zylib_err_bx_t) + opaque_size;
+        buf->bx.code = code;
+        buf->bx.line = line;
+        buf->bx.file = file;
+        buf->bx.function = function;
+        buf->bx.opaque.size = opaque_size;
+        memcpy((void *)&buf->bx.opaque.data, opaque, opaque_size);
+        r = zylib_dequeue_push_last(err->dequeue, (const zylib_opaque_t *)buf);
+        zylib_free(err->alloc, (void **)&buf);
+    }
     return r;
 }
 
