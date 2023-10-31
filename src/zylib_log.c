@@ -138,24 +138,26 @@ zylib_return_t zylib__log_write(const zylib_log_t *log, zylib_log_severity_t sev
                 size_t offset;
                 struct tm tm;
                 va_list args;
+                time_t now;
 
-                const time_t now = time(NULL);
+                va_start(args, format);
+                vsnprintf(user_message, max_message_size, format, args);
+                va_end(args);
+
+                now = time(NULL);
 
                 if (now == (time_t)-1)
                 {
                     goto write;
                 }
 
-                if (localtime_r(&now, &tm) != nullptr)
+                if (localtime_r(&now, &tm) == nullptr)
                 {
                     goto write;
                 }
 
                 strftime(date_buf, sizeof(date_buf), time_format, &tm);
 
-                va_start(args, format);
-                vsnprintf(user_message, max_message_size, format, args);
-                va_end(args);
             write:
                 switch (output_format)
                 {
