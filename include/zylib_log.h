@@ -41,7 +41,8 @@ typedef enum zylib_log_severity_e
 #define ZYLIB_LOG_PLAIN_OUTPUT_FORMAT_DEFAULT ("%s %s:%zu (%s) [%s] %s\n")
 #define ZYLIB_LOG_CSV_OUTPUT_FORMAT_DEFAULT ("%s,%s,%zu,%s,%s,%s\n")
 #define ZYLIB_LOG_XML_OUTPUT_FORMAT_DEFAULT                                                                            \
-    ("<message severity='%s'><date>%s</date><location file='%s' line='%zu' function='%s'/><text>%s</text></message>\n")
+    ("<message severity='%s'><date>%s</date><location file='%s' line='%zu' "                                           \
+     "function='%s'/><text>%s</text></message>\n")
 
 #define ZYLIB_LOG_MAX_MESSAGE_SIZE_DEFAULT (2048U)
 #define ZYLIB_LOG_MAX_MESSAGE_SIZE_MIN (1024U)
@@ -53,11 +54,11 @@ typedef enum zylib_log_severity_e
  * Macros
  */
 
-#define zylib_log_error(log, format, ...)                                                                                 \
+#define zylib_log_error(log, format, ...)                                                                              \
     zylib__log_write(log, ZYLIB_ERROR, __FILE__, __LINE__, __func__, format, ##__VA_ARGS__)
-#define zylib_log_warn(log, format, ...)                                                                                  \
+#define zylib_log_warn(log, format, ...)                                                                               \
     zylib__log_write(log, ZYLIB_WARN, __FILE__, __LINE__, __func__, format, ##__VA_ARGS__)
-#define zylib_log_info(log, format, ...)                                                                                  \
+#define zylib_log_info(log, format, ...)                                                                               \
     zylib__log_write(log, ZYLIB_INFO, __FILE__, __LINE__, __func__, format, ##__VA_ARGS__)
 
 /*
