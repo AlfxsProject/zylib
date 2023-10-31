@@ -38,10 +38,10 @@ typedef enum zylib_log_severity_e
 
 #define ZYLIB_LOG_OUTPUT_FORMAT_DEFAULT (ZYLIB_FORMAT_PLAIN)
 #define ZYLIB_LOG_OUTPUT_FORMAT_MAX (ZYLIB_FORMAT_XML)
-#define ZYLIB_LOG_PLAIN_OUTPUT_FORMAT_DEFAULT ("%s %s:%zu (%s) [%s] %s")
-#define ZYLIB_LOG_CSV_OUTPUT_FORMAT_DEFAULT ("%s,%s,%zu,%s,%s,%s")
+#define ZYLIB_LOG_PLAIN_OUTPUT_FORMAT_DEFAULT ("%s %s:%zu (%s) [%s] %s\n")
+#define ZYLIB_LOG_CSV_OUTPUT_FORMAT_DEFAULT ("%s,%s,%zu,%s,%s,%s\n")
 #define ZYLIB_LOG_XML_OUTPUT_FORMAT_DEFAULT                                                                            \
-    ("<message severity='%s'><date>%s</date><location file='%s' line='%zu' function='%s'/><text>%s</text></message>")
+    ("<message severity='%s'><date>%s</date><location file='%s' line='%zu' function='%s'/><text>%s</text></message>\n")
 
 #define ZYLIB_LOG_MAX_MESSAGE_SIZE_DEFAULT (2048U)
 #define ZYLIB_LOG_MAX_MESSAGE_SIZE_MIN (1024U)
