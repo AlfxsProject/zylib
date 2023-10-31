@@ -87,7 +87,6 @@ zylib_log_severity_t zylib_log_get_max_severity(const zylib_log_t *log)
 
 zylib_return_t zylib_log_set_output_format(zylib_log_t *log, zylib_format_t format)
 {
-    bool r = false;
     if (format <= ZYLIB_LOG_OUTPUT_FORMAT_MAX)
     {
         log->output_format = format;
