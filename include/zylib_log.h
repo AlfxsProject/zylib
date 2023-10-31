@@ -53,11 +53,11 @@ typedef enum zylib_log_severity_e
  * Macros
  */
 
-#define zy_log_error(log, format, ...)                                                                                 \
+#define zylib_log_error(log, format, ...)                                                                                 \
     zylib__log_write(log, ZYLIB_ERROR, __FILE__, __LINE__, __func__, format, ##__VA_ARGS__)
-#define zy_log_warn(log, format, ...)                                                                                  \
+#define zylib_log_warn(log, format, ...)                                                                                  \
     zylib__log_write(log, ZYLIB_WARN, __FILE__, __LINE__, __func__, format, ##__VA_ARGS__)
-#define zy_log_info(log, format, ...)                                                                                  \
+#define zylib_log_info(log, format, ...)                                                                                  \
     zylib__log_write(log, ZYLIB_INFO, __FILE__, __LINE__, __func__, format, ##__VA_ARGS__)
 
 /*
