@@ -83,16 +83,20 @@ int zylib_error_push_first(zylib_error_t *err, int64_t code, const char *file, s
         size_t size;
         zylib_error_box_t bx;
     } *buf;
-    size_t total_size = sizeof(*buf) + sizeof(*box) + box->size;
+
+    const size_t box_size = box == nullptr ? 0 : box->size;
+    const size_t total_size = sizeof(*buf) + sizeof(*box) + box_size;
+
     int r = zylib_malloc(err->alloc, total_size, (void **)&buf);
     if (r == ZYLIB_OK)
     {
-        buf->size = sizeof(zylib_error_box_t) + sizeof(*box) + box->size;
+        buf->size = sizeof(zylib_error_box_t) + sizeof(*box) + box_size;
         buf->bx.code = code;
         buf->bx.line = line;
         buf->bx.file = file;
         buf->bx.function = function;
-        memcpy(&buf->bx.box, box, sizeof(*box) + box->size);
+        buf->bx.box.size = box_size;
+        memcpy(buf->bx.box.data, box->data, box_size);
         r = zylib_dequeue_push_first(err->dequeue, (const zylib_box_t *)buf);
         zylib_free(err->alloc, (void **)&buf);
     }
@@ -107,16 +111,20 @@ int zylib_error_push_last(zylib_error_t *err, int64_t code, const char *file, si
         size_t size;
         zylib_error_box_t bx;
     } *buf;
-    size_t total_size = sizeof(*buf) + sizeof(*box) + box->size;
+
+    const size_t box_size = box == nullptr ? 0 : box->size;
+    const size_t total_size = sizeof(*buf) + sizeof(*box) + box_size;
+
     int r = zylib_malloc(err->alloc, total_size, (void **)&buf);
     if (r == ZYLIB_OK)
     {
-        buf->size = sizeof(zylib_error_box_t) + sizeof(*box) + box->size;
+        buf->size = sizeof(zylib_error_box_t) + sizeof(*box) + box_size;
         buf->bx.code = code;
         buf->bx.line = line;
         buf->bx.file = file;
         buf->bx.function = function;
-        memcpy(&buf->bx.box, box, sizeof(*box) + box->size);
+        buf->bx.box.size = box_size;
+        memcpy(buf->bx.box.data, box->data, box_size);
         r = zylib_dequeue_push_last(err->dequeue, (const zylib_box_t *)buf);
         zylib_free(err->alloc, (void **)&buf);
     }
