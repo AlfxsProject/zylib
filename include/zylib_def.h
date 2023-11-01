@@ -18,11 +18,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
-typedef struct zylib_opaque_s
+typedef struct zylib_box_s
 {
     const size_t size;
     const unsigned char data[0];
-} zylib_opaque_t;
+} zylib_box_t;
 
 typedef enum zylib_format_e
 {

@@ -26,13 +26,12 @@ extern "C"
     __attribute__((nonnull)) zylib_return_t zylib_dequeue_construct(zylib_dequeue_t **dqe, const zylib_alloc_t *alloc);
     __attribute__((nonnull)) void zylib_dequeue_destruct(zylib_dequeue_t **dqe);
     __attribute__((nonnull)) void zylib_dequeue_clear(zylib_dequeue_t *dqe);
-    __attribute__((nonnull)) zylib_return_t zylib_dequeue_push_first(zylib_dequeue_t *dqe,
-                                                                     const zylib_opaque_t *opaque);
-    __attribute__((nonnull)) zylib_return_t zylib_dequeue_push_last(zylib_dequeue_t *dqe, const zylib_opaque_t *opaque);
+    __attribute__((nonnull)) zylib_return_t zylib_dequeue_push_first(zylib_dequeue_t *dqe, const zylib_box_t *box);
+    __attribute__((nonnull)) zylib_return_t zylib_dequeue_push_last(zylib_dequeue_t *dqe, const zylib_box_t *box);
     __attribute__((nonnull)) void zylib_dequeue_discard_first(zylib_dequeue_t *dqe);
     __attribute__((nonnull)) void zylib_dequeue_discard_last(zylib_dequeue_t *dqe);
-    __attribute__((nonnull)) const zylib_opaque_t *zylib_dequeue_peek_first(const zylib_dequeue_t *dqe);
-    __attribute__((nonnull)) const zylib_opaque_t *zylib_dequeue_peek_last(const zylib_dequeue_t *dqe);
+    __attribute__((nonnull)) const zylib_box_t *zylib_dequeue_peek_first(const zylib_dequeue_t *dqe);
+    __attribute__((nonnull)) const zylib_box_t *zylib_dequeue_peek_last(const zylib_dequeue_t *dqe);
     __attribute__((nonnull)) size_t zylib_dequeue_size(const zylib_dequeue_t *dqe);
     __attribute__((nonnull)) bool zylib_dequeue_is_empty(const zylib_dequeue_t *dqe);
 

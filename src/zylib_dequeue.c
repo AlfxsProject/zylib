@@ -21,37 +21,32 @@ typedef struct zylib_dequeue_bx_s
 {
     const zylib_alloc_t *alloc;
     struct zylib_dequeue_bx_s *previous, *next;
-    struct
-    {
-        size_t size;
-        unsigned char data[0];
-    } opaque;
-} zylib_dequeue_bx_t;
+    zylib_box_t box;
+} zylib_dequeue_box_t;
 
 struct zylib_dequeue_s
 {
     const zylib_alloc_t *alloc;
-    zylib_dequeue_bx_t *first, *last;
+    zylib_dequeue_box_t *first, *last;
     atomic_size_t size;
 };
 
-__attribute__((nonnull)) static zylib_return_t zylib_dequeue_bx_construct(zylib_dequeue_bx_t **bx,
+__attribute__((nonnull)) static zylib_return_t zylib_dequeue_bx_construct(zylib_dequeue_box_t **bx,
                                                                           const zylib_alloc_t *alloc,
-                                                                          const zylib_opaque_t *opaque)
+                                                                          const zylib_box_t *box)
 {
-    zylib_return_t r = zylib_malloc(alloc, sizeof(zylib_dequeue_bx_t) + opaque->size, (void **)bx);
+    zylib_return_t r = zylib_malloc(alloc, sizeof(zylib_dequeue_box_t) + box->size, (void **)bx);
     if (r == ZYLIB_OK)
     {
         (*bx)->alloc = alloc;
         (*bx)->previous = nullptr;
         (*bx)->next = nullptr;
-        (*bx)->opaque.size = opaque->size;
-        memcpy((void *)&(*bx)->opaque.data, opaque->data, opaque->size);
+        memcpy(&(*bx)->box, box, box->size);
     }
     return r;
 }
 
-__attribute__((nonnull)) static void zylib_dequeue_bx_destruct(zylib_dequeue_bx_t **bx)
+__attribute__((nonnull)) static void zylib_dequeue_bx_destruct(zylib_dequeue_box_t **bx)
 {
     if (*bx != nullptr)
     {
@@ -83,10 +78,10 @@ void zylib_dequeue_destruct(zylib_dequeue_t **dqe)
 
 void zylib_dequeue_clear(zylib_dequeue_t *dqe)
 {
-    zylib_dequeue_bx_t *bx = dqe->first;
+    zylib_dequeue_box_t *bx = dqe->first;
     while (bx != nullptr)
     {
-        zylib_dequeue_bx_t *next = bx->next;
+        zylib_dequeue_box_t *next = bx->next;
         zylib_dequeue_bx_destruct(&bx);
         bx = next;
     }
@@ -95,10 +90,10 @@ void zylib_dequeue_clear(zylib_dequeue_t *dqe)
     dqe->size = 0;
 }
 
-zylib_return_t zylib_dequeue_push_first(zylib_dequeue_t *dqe, const zylib_opaque_t *opaque)
+zylib_return_t zylib_dequeue_push_first(zylib_dequeue_t *dqe, const zylib_box_t *box)
 {
-    zylib_dequeue_bx_t *bx;
-    zylib_return_t r = zylib_dequeue_bx_construct(&bx, dqe->alloc, opaque);
+    zylib_dequeue_box_t *bx;
+    zylib_return_t r = zylib_dequeue_bx_construct(&bx, dqe->alloc, box);
     if (r == ZYLIB_OK)
     {
         if (dqe->size != 0)
@@ -117,10 +112,10 @@ zylib_return_t zylib_dequeue_push_first(zylib_dequeue_t *dqe, const zylib_opaque
     return r;
 }
 
-zylib_return_t zylib_dequeue_push_last(zylib_dequeue_t *dqe, const zylib_opaque_t *opaque)
+zylib_return_t zylib_dequeue_push_last(zylib_dequeue_t *dqe, const zylib_box_t *box)
 {
-    zylib_dequeue_bx_t *bx;
-    int r = zylib_dequeue_bx_construct(&bx, dqe->alloc, opaque);
+    zylib_dequeue_box_t *bx;
+    int r = zylib_dequeue_bx_construct(&bx, dqe->alloc, box);
     if (r == ZYLIB_OK)
     {
         if (dqe->size != 0)
@@ -143,7 +138,7 @@ void zylib_dequeue_discard_first(zylib_dequeue_t *dqe)
 {
     if (dqe->size != 0)
     {
-        zylib_dequeue_bx_t *bx = dqe->first;
+        zylib_dequeue_box_t *bx = dqe->first;
         if (bx->next != nullptr)
         {
             bx->next->previous = nullptr;
@@ -163,7 +158,7 @@ void zylib_dequeue_discard_last(zylib_dequeue_t *dqe)
 {
     if (dqe->size != 0)
     {
-        zylib_dequeue_bx_t *bx = dqe->last;
+        zylib_dequeue_box_t *bx = dqe->last;
         if (bx->previous != nullptr)
         {
             bx->previous->next = nullptr;
@@ -179,14 +174,14 @@ void zylib_dequeue_discard_last(zylib_dequeue_t *dqe)
     }
 }
 
-const zylib_opaque_t *zylib_dequeue_peek_first(const zylib_dequeue_t *dqe)
+const zylib_box_t *zylib_dequeue_peek_first(const zylib_dequeue_t *dqe)
 {
-    return (const zylib_opaque_t *)&dqe->first->opaque;
+    return (const zylib_box_t *)&dqe->first->box;
 }
 
-const zylib_opaque_t *zylib_dequeue_peek_last(const zylib_dequeue_t *dqe)
+const zylib_box_t *zylib_dequeue_peek_last(const zylib_dequeue_t *dqe)
 {
-    return (const zylib_opaque_t *)&dqe->last->opaque;
+    return (const zylib_box_t *)&dqe->last->box;
 }
 
 size_t zylib_dequeue_size(const zylib_dequeue_t *dqe)
