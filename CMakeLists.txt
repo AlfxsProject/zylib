@@ -17,6 +17,6 @@ set(SOURCES include/zylib_alloc.h
         include/zylib_thread.h
         src/zylib_thread.c
         include/zylib_err.h
-        src/zy_err.c)
+        src/zylib_err.c)
 
 add_library(${CMAKE_PROJECT_NAME} STATIC ${SOURCES})
