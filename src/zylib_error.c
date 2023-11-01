@@ -78,14 +78,14 @@ void zylib_error_clear(zylib_error_t *err)
 int zylib_error_push_first(zylib_error_t *err, int64_t code, const char *file, size_t line, const char *function,
                            const zylib_box_t *box)
 {
-    struct
+    struct buf_s
     {
         size_t size;
         zylib_error_box_t bx;
     } *buf;
 
     const size_t box_size = box == nullptr ? 0 : box->size;
-    const size_t total_size = sizeof(*buf) + sizeof(*box) + box_size;
+    const size_t total_size = sizeof(struct buf_s) + sizeof(zylib_box_t) + box_size;
 
     int r = zylib_malloc(err->alloc, total_size, (void **)&buf);
     if (r == ZYLIB_OK)
@@ -106,14 +106,14 @@ int zylib_error_push_first(zylib_error_t *err, int64_t code, const char *file, s
 int zylib_error_push_last(zylib_error_t *err, int64_t code, const char *file, size_t line, const char *function,
                           const zylib_box_t *box)
 {
-    struct
+    struct buf_s
     {
         size_t size;
         zylib_error_box_t bx;
     } *buf;
 
     const size_t box_size = box == nullptr ? 0 : box->size;
-    const size_t total_size = sizeof(*buf) + sizeof(*box) + box_size;
+    const size_t total_size = sizeof(struct buf_s) + sizeof(zylib_box_t) + box_size;
 
     int r = zylib_malloc(err->alloc, total_size, (void **)&buf);
     if (r == ZYLIB_OK)
