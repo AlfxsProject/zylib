@@ -41,7 +41,7 @@ __attribute__((nonnull)) static zylib_return_t zylib_dequeue_bx_construct(zylib_
         (*bx)->alloc = alloc;
         (*bx)->previous = nullptr;
         (*bx)->next = nullptr;
-        memcpy((void *)&(*bx)->opaque, opaque, sizeof(zylib_opaque_t));
+        memcpy((void *)&(*bx)->opaque, opaque, sizeof(zylib_opaque_t) + opaque->size);
     }
     return r;
 }
