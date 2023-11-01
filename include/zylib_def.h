@@ -20,8 +20,8 @@
 
 typedef struct zylib_box_s
 {
-    const size_t size;
-    const unsigned char data[0];
+    size_t size;
+    unsigned char data[0];
 } zylib_box_t;
 
 typedef enum zylib_format_e
