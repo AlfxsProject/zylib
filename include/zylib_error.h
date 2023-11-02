@@ -45,7 +45,7 @@ extern "C"
     __attribute__((nonnull)) void zylib_error_discard_last(zylib_error_t *err);
     __attribute__((nonnull)) zylib_error_box_t *zylib_error_peek_first(const zylib_error_t *err);
     __attribute__((nonnull)) zylib_error_box_t *zylib_error_peek_last(const zylib_error_t *err);
-    __attribute__((nonnull)) size_t zylib_error_peek_size(const zylib_error_t *err);
+    __attribute__((nonnull)) size_t zylib_error_size(const zylib_error_t *err);
     __attribute__((nonnull)) bool zylib_error_is_empty(const zylib_error_t *err);
     __attribute__((nonnull)) int64_t zylib_error_box_peek_code(const zylib_error_box_t *bx);
     __attribute__((nonnull)) const char *zylib_error_box_peek_file(const zylib_error_box_t *bx);

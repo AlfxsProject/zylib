@@ -116,8 +116,8 @@ const char *zylib_log_get_time_format(const zylib_log_t *log)
  * Print message
  * TIME, FILE, LINE, FUNCTION, SEVERITY, MESSAGE
  */
-zylib_return_t zylib__log_write(const zylib_log_t *log, zylib_log_severity_t severity, const char *file, size_t line,
-                                const char *function, const char *format, ...)
+zylib_return_t zylib_log_write(const zylib_log_t *log, zylib_log_severity_t severity, const char *file, size_t line,
+                               const char *function, const char *format, ...)
 {
     const zylib_log_severity_t max_severity = log->max_severity;
     const zylib_format_t output_format = log->output_format;

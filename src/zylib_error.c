@@ -15,6 +15,7 @@
  */
 #include "zylib_error.h"
 #include "zylib_dequeue.h"
+
 #include <string.h>
 
 /*
@@ -151,7 +152,7 @@ zylib_error_box_t *zylib_error_peek_last(const zylib_error_t *err)
     return (zylib_error_box_t *)(&((zylib_box_t *)zylib_dequeue_peek_last(err->dequeue))->data);
 }
 
-size_t zylib_error_peek_size(const zylib_error_t *err)
+size_t zylib_error_size(const zylib_error_t *err)
 {
     return zylib_dequeue_size(err->dequeue);
 }

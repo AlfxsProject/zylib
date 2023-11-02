@@ -54,12 +54,12 @@ typedef enum zylib_log_severity_e
  * Macros
  */
 
-#define zylib_log_error(log, format, ...)                                                                              \
-    zylib__log_write(log, ZYLIB_ERROR, __FILE__, __LINE__, __func__, format, ##__VA_ARGS__)
-#define zylib_log_warn(log, format, ...)                                                                               \
-    zylib__log_write(log, ZYLIB_WARN, __FILE__, __LINE__, __func__, format, ##__VA_ARGS__)
-#define zylib_log_info(log, format, ...)                                                                               \
-    zylib__log_write(log, ZYLIB_INFO, __FILE__, __LINE__, __func__, format, ##__VA_ARGS__)
+#define ZYLIB_LOG_ERROR(log, format, ...)                                                                              \
+    zylib_log_write(log, ZYLIB_ERROR, __FILE__, __LINE__, __func__, format, ##__VA_ARGS__)
+#define ZYLIB_LOG_WARN(log, format, ...)                                                                               \
+    zylib_log_write(log, ZYLIB_WARN, __FILE__, __LINE__, __func__, format, ##__VA_ARGS__)
+#define ZYLIB_LOG_INFO(log, format, ...)                                                                               \
+    zylib_log_write(log, ZYLIB_INFO, __FILE__, __LINE__, __func__, format, ##__VA_ARGS__)
 
 /*
  * Functions
@@ -87,7 +87,7 @@ extern "C"
     __attribute__((nonnull)) const char *zylib_log_get_time_format(const zylib_log_t *log);
 
     /* Internal Use Only. */
-    __attribute__((nonnull)) __attribute__((format(printf, 6, 7))) zylib_return_t zylib__log_write(
+    __attribute__((nonnull)) __attribute__((format(printf, 6, 7))) zylib_return_t zylib_log_write(
         const zylib_log_t *log, zylib_log_severity_t severity, const char *file, size_t line, const char *function,
         const char *format, ...);
 
