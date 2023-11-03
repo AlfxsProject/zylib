@@ -38,7 +38,9 @@ typedef enum zylib_log_severity_e
 
 #define ZYLIB_LOG_OUTPUT_FORMAT_DEFAULT (ZYLIB_FORMAT_PLAIN)
 #define ZYLIB_LOG_OUTPUT_FORMAT_MAX (ZYLIB_FORMAT_XML)
+/* DATE FILE:LINE (FUNCTION) [SEVERITY] MESSAGE\n */
 #define ZYLIB_LOG_PLAIN_OUTPUT_FORMAT_DEFAULT ("%s %s:%zu (%s) [%s] %s\n")
+/* DATE,FILE,LINE,FUNCTION,SEVERITY,MESSAGE */
 #define ZYLIB_LOG_CSV_OUTPUT_FORMAT_DEFAULT ("%s,%s,%zu,%s,%s,%s\n")
 #define ZYLIB_LOG_XML_OUTPUT_FORMAT_DEFAULT                                                                            \
     ("<message severity='%s'><date>%s</date><location file='%s' line='%zu' "                                           \
@@ -87,9 +89,11 @@ extern "C"
     __attribute__((nonnull)) const char *zylib_log_get_time_format(const zylib_log_t *log);
 
     /* Internal Use Only. */
-    __attribute__((nonnull)) __attribute__((format(printf, 6, 7))) zylib_return_t zylib_log_write(
-        const zylib_log_t *log, zylib_log_severity_t severity, const char *file, size_t line, const char *function,
-        const char *format, ...);
+    __attribute__((nonnull)) __attribute__((format(printf, 6, 7))) size_t zylib_log_write(const zylib_log_t *log,
+                                                                                          zylib_log_severity_t severity,
+                                                                                          const char *file, size_t line,
+                                                                                          const char *function,
+                                                                                          const char *format, ...);
 
 #ifdef __cplusplus
 }

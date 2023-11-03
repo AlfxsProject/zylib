@@ -116,8 +116,8 @@ const char *zylib_log_get_time_format(const zylib_log_t *log)
  * Print message
  * TIME, FILE, LINE, FUNCTION, SEVERITY, MESSAGE
  */
-zylib_return_t zylib_log_write(const zylib_log_t *log, zylib_log_severity_t severity, const char *file, size_t line,
-                               const char *function, const char *format, ...)
+size_t zylib_log_write(const zylib_log_t *log, zylib_log_severity_t severity, const char *file, size_t line,
+                       const char *function, const char *format, ...)
 {
     const zylib_log_severity_t max_severity = log->max_severity;
     const zylib_format_t output_format = log->output_format;
@@ -127,57 +127,54 @@ zylib_return_t zylib_log_write(const zylib_log_t *log, zylib_log_severity_t seve
     if (severity <= max_severity)
     {
         char *user_message = nullptr, *log_message = nullptr;
-        int r = zylib_malloc(log->alloc, max_message_size, (void **)&user_message);
-        if (r == ZYLIB_OK)
+        size_t r = 0;
+        if (zylib_malloc(log->alloc, max_message_size, (void **)&user_message) == ZYLIB_OK &&
+            zylib_malloc(log->alloc, max_message_size, (void **)&log_message) == ZYLIB_OK)
         {
-            r = zylib_malloc(log->alloc, max_message_size, (void **)&log_message);
-            if (r == ZYLIB_OK)
+            static const char *error_string[] = {"ERROR", "WARNING", "INFO"};
+            char date_buf[120] = {0};
+            size_t offset;
+            struct tm tm;
+            va_list args;
+            time_t now;
+
+            va_start(args, format);
+            vsnprintf(user_message, max_message_size, format, args);
+            va_end(args);
+
+            now = time(NULL);
+
+            if (now == (time_t)-1)
             {
-                static const char *error_string[] = {"ERROR", "WARNING", "INFO"};
-                char date_buf[120] = {0};
-                size_t offset;
-                struct tm tm;
-                va_list args;
-                time_t now;
-
-                va_start(args, format);
-                vsnprintf(user_message, max_message_size, format, args);
-                va_end(args);
-
-                now = time(NULL);
-
-                if (now == (time_t)-1)
-                {
-                    goto write;
-                }
-
-                if (localtime_r(&now, &tm) == nullptr)
-                {
-                    goto write;
-                }
-
-                strftime(date_buf, sizeof(date_buf), time_format, &tm);
-
-            write:
-                switch (output_format)
-                {
-                case ZYLIB_FORMAT_CSV:
-                    offset = snprintf(log_message, max_message_size, ZYLIB_LOG_CSV_OUTPUT_FORMAT_DEFAULT, date_buf,
-                                      file, line, function, error_string[severity], user_message);
-                    break;
-                case ZYLIB_FORMAT_XML:
-                    offset = snprintf(log_message, max_message_size, ZYLIB_LOG_XML_OUTPUT_FORMAT_DEFAULT,
-                                      error_string[severity], date_buf, file, line, function, user_message);
-                    break;
-                default:
-                case ZYLIB_FORMAT_PLAIN:
-                    offset = snprintf(log_message, max_message_size, ZYLIB_LOG_PLAIN_OUTPUT_FORMAT_DEFAULT, date_buf,
-                                      file, line, function, error_string[severity], user_message);
-                    break;
-                }
-
-                write(log->fd, log_message, offset);
+                goto write;
             }
+
+            if (localtime_r(&now, &tm) == nullptr)
+            {
+                goto write;
+            }
+
+            strftime(date_buf, sizeof(date_buf), time_format, &tm);
+
+        write:
+            switch (output_format)
+            {
+            case ZYLIB_FORMAT_CSV:
+                offset = snprintf(log_message, max_message_size, ZYLIB_LOG_CSV_OUTPUT_FORMAT_DEFAULT, date_buf, file,
+                                  line, function, error_string[severity], user_message);
+                break;
+            case ZYLIB_FORMAT_XML:
+                offset = snprintf(log_message, max_message_size, ZYLIB_LOG_XML_OUTPUT_FORMAT_DEFAULT,
+                                  error_string[severity], date_buf, file, line, function, user_message);
+                break;
+            default:
+            case ZYLIB_FORMAT_PLAIN:
+                offset = snprintf(log_message, max_message_size, ZYLIB_LOG_PLAIN_OUTPUT_FORMAT_DEFAULT, date_buf, file,
+                                  line, function, error_string[severity], user_message);
+                break;
+            }
+
+            r = write(log->fd, log_message, offset);
         }
         if (user_message != nullptr)
         {
@@ -189,5 +186,5 @@ zylib_return_t zylib_log_write(const zylib_log_t *log, zylib_log_severity_t seve
         }
         return r;
     }
-    return ZYLIB_OK;
+    return 0;
 }
