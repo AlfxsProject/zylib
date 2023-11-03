@@ -31,8 +31,8 @@ struct zylib_error_s
 struct zylib_error_box_s
 {
     int64_t code;
-    size_t line;
     const char *file;
+    size_t line;
     const char *function;
     zylib_box_t box;
 };
@@ -93,8 +93,8 @@ int zylib_error_push_first(zylib_error_t *err, int64_t code, const char *file, s
     {
         buf->size = sizeof(zylib_error_box_t) + sizeof(*box) + box_size;
         buf->bx.code = code;
-        buf->bx.line = line;
         buf->bx.file = file;
+        buf->bx.line = line;
         buf->bx.function = function;
         buf->bx.box.size = box_size;
         memcpy(buf->bx.box.data, box->data, box_size);
@@ -121,8 +121,8 @@ int zylib_error_push_last(zylib_error_t *err, int64_t code, const char *file, si
     {
         buf->size = sizeof(zylib_error_box_t) + sizeof(*box) + box_size;
         buf->bx.code = code;
-        buf->bx.line = line;
         buf->bx.file = file;
+        buf->bx.line = line;
         buf->bx.function = function;
         buf->bx.box.size = box_size;
         memcpy(buf->bx.box.data, box->data, box_size);
