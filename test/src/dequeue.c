@@ -86,7 +86,11 @@ bool test_loop(zylib_dequeue_t *dqe, zylib_return_t (*push)(zylib_dequeue_t *, c
         zylib_box_t *const box = (zylib_box_t *)buf;
         box->size = sizeof(buf) - sizeof(zylib_box_t);
 
-        getrandom(box->data, box->size, GRND_NONBLOCK);
+        if (getrandom(box->data, box->size, 0) != box->size)
+        {
+            PRINT("getrandom()");
+            goto done;
+        }
 
         if (push(dqe, box) != ZYLIB_OK)
         {

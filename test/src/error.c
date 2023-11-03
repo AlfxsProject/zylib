@@ -95,7 +95,12 @@ bool test_loop(zylib_error_t *error,
             zylib_box_t box;
         } *const ptr = (void *)buf;
 
-        getrandom(ptr, SIZE, GRND_NONBLOCK);
+        if (getrandom(ptr, SIZE, 0) != SIZE)
+        {
+            PRINT("getrandom()");
+            goto done;
+        }
+
         ptr->box.size = sizeof(buf) - sizeof(struct ptr_s);
         ptr->file = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z";
         ptr->function = "a b c d e f g h i j k l m n o p q r s t u v w x y z";

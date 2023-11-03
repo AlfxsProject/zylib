@@ -109,3 +109,4 @@ gen
 
 # CMake Build Files
 cmake-build-debug
+cmake-build-release
