@@ -15,11 +15,60 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <zylib_alloc.h>
+#include <zylib_log.h>
+
+#define BASE_SIZE (1U)
+#define ITERATIONS (10U)
+
+#define PRINT(format, ...) ZYLIB_LOG_ERROR(log, format, ##__VA_ARGS__)
+
+static zylib_log_t *log = nullptr;
+
+zylib_return_t simulated_realloc_incremental_grow(const zylib_alloc_t *const alloc, size_t size, void **ptr)
+{
+    void *ptr_n = nullptr;
+    zylib_return_t r;
+    if ((r = zylib_malloc(alloc, size, &ptr_n)) != ZYLIB_OK)
+    {
+        PRINT("ERROR: zylib_malloc");
+        goto done;
+    }
+    memcpy(ptr_n, *ptr, size - 1);
+    zylib_free(alloc, ptr);
+    *ptr = ptr_n;
+done:
+    return r;
+}
+
+bool test_loop(const zylib_alloc_t *const alloc,
+               zylib_return_t (*realloc)(const zylib_alloc_t *alloc, size_t size, void **ptr))
+{
+    bool r = false;
+
+    void *ptr = nullptr;
+
+    for (unsigned int i = 0; i < ITERATIONS; ++i)
+    {
+        if (realloc(alloc, BASE_SIZE + i, &ptr) != ZYLIB_OK)
+        {
+            PRINT("ERROR: realloc(%u)", BASE_SIZE + i);
+            goto done;
+        }
+    }
+
+    r = true;
+done:
+    if (ptr != nullptr)
+    {
+        zylib_free(alloc, &ptr);
+    }
+    return r;
+}
 
 int main()
 {
-    void *ptr1 = nullptr, *ptr2 = nullptr;
     int r = EXIT_FAILURE;
     zylib_alloc_t *alloc = nullptr;
 
@@ -29,27 +78,29 @@ int main()
         goto done;
     }
 
-    if (zylib_malloc(alloc, 1, &ptr1) != ZYLIB_OK)
+    if (zylib_log_construct(&log, alloc, 2) != ZYLIB_OK)
     {
-        fprintf(stderr, "ERROR: malloc(1)\n");
+        fprintf(stderr, "ERROR: zylib_log_construct()\n");
         goto done;
     }
 
-    if (zylib_realloc(alloc, 1, &ptr2) != ZYLIB_OK)
+    if (!test_loop(alloc, zylib_realloc))
     {
-        fprintf(stderr, "ERROR: realloc(1)\n");
+        PRINT("ERROR: test_loop: zylib_realloc");
+        goto done;
+    }
+
+    if (!test_loop(alloc, simulated_realloc_incremental_grow))
+    {
+        PRINT("ERROR: test_loop: zylib_malloc");
         goto done;
     }
 
     r = EXIT_SUCCESS;
 done:
-    if (ptr1 != nullptr)
+    if (log != nullptr)
     {
-        zylib_free(alloc, &ptr1);
-    }
-    if (ptr2 != nullptr)
-    {
-        zylib_free(alloc, &ptr2);
+        zylib_log_destruct(&log);
     }
     if (alloc != nullptr)
     {
