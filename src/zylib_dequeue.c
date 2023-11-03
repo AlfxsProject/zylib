@@ -41,7 +41,7 @@ __attribute__((nonnull)) static zylib_return_t zylib_dequeue_bx_construct(zylib_
         (*bx)->alloc = alloc;
         (*bx)->previous = nullptr;
         (*bx)->next = nullptr;
-        memcpy(&(*bx)->box, box, box->size);
+        memcpy(&(*bx)->box, box, sizeof(zylib_box_t) + box->size);
     }
     return r;
 }

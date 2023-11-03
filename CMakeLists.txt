@@ -3,9 +3,9 @@ project(zylib C)
 
 set(CMAKE_C_STANDARD 23)
 
-add_compile_definitions(DO_MUTEX DO_PTHREAD)
+enable_testing()
 
-include_directories(include)
+add_compile_definitions(DO_MUTEX DO_PTHREAD)
 
 set(SOURCES include/zylib_alloc.h
         src/zylib_alloc.c
@@ -19,4 +19,16 @@ set(SOURCES include/zylib_alloc.h
         include/zylib_error.h
         src/zylib_error.c)
 
-add_library(${CMAKE_PROJECT_NAME} STATIC ${SOURCES})
+add_library(zylib STATIC ${SOURCES})
+target_include_directories(zylib PUBLIC include)
+
+add_executable(alloc test/src/alloc.c)
+target_link_libraries(alloc zylib)
+target_include_directories(alloc PUBLIC include)
+
+add_executable(dequeue test/src/dequeue.c)
+target_link_libraries(dequeue zylib)
+target_include_directories(dequeue PUBLIC include)
+
+add_test(NAME alloc COMMAND alloc)
+add_test(NAME dequeue COMMAND dequeue)
