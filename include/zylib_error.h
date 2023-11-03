@@ -32,15 +32,17 @@ extern "C"
 {
 #endif
 
-    __attribute__((nonnull)) int zylib_error_construct(zylib_error_t **err, const zylib_alloc_t *alloc);
+    __attribute__((nonnull)) zylib_return_t zylib_error_construct(zylib_error_t **err, const zylib_alloc_t *alloc);
     __attribute__((nonnull)) void zylib_error_destruct(zylib_error_t **err);
     __attribute__((nonnull)) void zylib_error_clear(zylib_error_t *err);
-    __attribute__((nonnull(1, 3, 5))) int zylib_error_push_first(zylib_error_t *err, int64_t code, const char *file,
-                                                                 size_t line, const char *function,
-                                                                 const zylib_box_t *box);
-    __attribute__((nonnull(1, 3, 5))) int zylib_error_push_last(zylib_error_t *err, int64_t code, const char *file,
-                                                                size_t line, const char *function,
-                                                                const zylib_box_t *box);
+    __attribute__((nonnull(1, 3, 5))) zylib_return_t zylib_error_push_first(zylib_error_t *err, int64_t code,
+                                                                            const char *file, size_t line,
+                                                                            const char *function,
+                                                                            const zylib_box_t *box);
+    __attribute__((nonnull(1, 3, 5))) zylib_return_t zylib_error_push_last(zylib_error_t *err, int64_t code,
+                                                                           const char *file, size_t line,
+                                                                           const char *function,
+                                                                           const zylib_box_t *box);
     __attribute__((nonnull)) void zylib_error_discard_first(zylib_error_t *err);
     __attribute__((nonnull)) void zylib_error_discard_last(zylib_error_t *err);
     __attribute__((nonnull)) zylib_error_box_t *zylib_error_peek_first(const zylib_error_t *err);

@@ -41,7 +41,7 @@ struct zylib_error_box_s
  * Functions
  */
 
-int zylib_error_construct(zylib_error_t **err, const zylib_alloc_t *alloc)
+zylib_return_t zylib_error_construct(zylib_error_t **err, const zylib_alloc_t *alloc)
 {
     int r = zylib_malloc(alloc, sizeof(zylib_error_t), (void **)err);
 
@@ -76,8 +76,8 @@ void zylib_error_clear(zylib_error_t *err)
     zylib_dequeue_clear(err->dequeue);
 }
 
-int zylib_error_push_first(zylib_error_t *err, int64_t code, const char *file, size_t line, const char *function,
-                           const zylib_box_t *box)
+zylib_return_t zylib_error_push_first(zylib_error_t *err, int64_t code, const char *file, size_t line,
+                                      const char *function, const zylib_box_t *box)
 {
     struct buf_s
     {
@@ -104,8 +104,8 @@ int zylib_error_push_first(zylib_error_t *err, int64_t code, const char *file, s
     return r;
 }
 
-int zylib_error_push_last(zylib_error_t *err, int64_t code, const char *file, size_t line, const char *function,
-                          const zylib_box_t *box)
+zylib_return_t zylib_error_push_last(zylib_error_t *err, int64_t code, const char *file, size_t line,
+                                     const char *function, const zylib_box_t *box)
 {
     struct buf_s
     {

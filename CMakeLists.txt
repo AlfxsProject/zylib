@@ -30,5 +30,10 @@ add_executable(dequeue test/src/dequeue.c)
 target_link_libraries(dequeue zylib)
 target_include_directories(dequeue PUBLIC include)
 
+add_executable(error test/src/error.c)
+target_link_libraries(error zylib)
+target_include_directories(error PUBLIC include)
+
 add_test(NAME alloc COMMAND alloc)
 add_test(NAME dequeue COMMAND dequeue)
+add_test(NAME error COMMAND error)

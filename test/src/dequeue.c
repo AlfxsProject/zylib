@@ -1,3 +1,18 @@
+/*
+ * Copyright 2023 Alexandre Fernandez <alex@fernandezfamily.email>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,13 +33,13 @@ bool test_empty(const zylib_dequeue_t *dqe)
 
     if (zylib_dequeue_size(dqe) != 0)
     {
-        PRINT("ERROR: zylib_dequeue_size()");
+        PRINT("zylib_dequeue_size()");
         goto done;
     }
 
     if (!zylib_dequeue_is_empty(dqe))
     {
-        PRINT("ERROR: zylib_dequeue_is_empty()");
+        PRINT("zylib_dequeue_is_empty()");
         goto done;
     }
 
@@ -39,13 +54,13 @@ bool test_size_positive_n(const zylib_dequeue_t *dqe, size_t n)
 
     if (zylib_dequeue_size(dqe) != n)
     {
-        PRINT("ERROR: zylib_dequeue_size()");
+        PRINT("zylib_dequeue_size()");
         goto done;
     }
 
     if (zylib_dequeue_is_empty(dqe))
     {
-        PRINT("ERROR: zylib_dequeue_is_empty()");
+        PRINT("zylib_dequeue_is_empty()");
         goto done;
     }
 
@@ -61,7 +76,7 @@ bool test_loop(zylib_dequeue_t *dqe, zylib_return_t (*push)(zylib_dequeue_t *, c
 
     if (!test_empty(dqe))
     {
-        PRINT("ERROR: test_empty()");
+        PRINT("test_empty()");
         goto done;
     }
 
@@ -75,13 +90,13 @@ bool test_loop(zylib_dequeue_t *dqe, zylib_return_t (*push)(zylib_dequeue_t *, c
 
         if (push(dqe, box) != ZYLIB_OK)
         {
-            PRINT("ERROR: push()");
+            PRINT("push()");
             goto done;
         }
 
         if (!test_size_positive_n(dqe, i + 1))
         {
-            PRINT("ERROR: test_size_positive_n");
+            PRINT("test_size_positive_n");
             goto done;
         }
 
@@ -89,13 +104,13 @@ bool test_loop(zylib_dequeue_t *dqe, zylib_return_t (*push)(zylib_dequeue_t *, c
 
         if (box->size != first->size)
         {
-            PRINT("ERROR: peek(); size");
+            PRINT("peek(): size");
             goto done;
         }
 
         if (memcmp(box->data, first->data, box->size) != 0)
         {
-            PRINT("ERROR: peek(); data");
+            PRINT("peek(): data");
             goto done;
         }
     }
@@ -104,7 +119,7 @@ bool test_loop(zylib_dequeue_t *dqe, zylib_return_t (*push)(zylib_dequeue_t *, c
 
     if (!test_empty(dqe))
     {
-        PRINT("ERROR: test_empty()");
+        PRINT("test_empty()");
         goto done;
     }
 
@@ -122,31 +137,31 @@ int main()
 
     if (zylib_alloc_construct(&alloc, malloc, realloc, free) != ZYLIB_OK)
     {
-        fprintf(stderr, "ERROR: zylib_alloc_construct()\n");
+        fprintf(stderr, "zylib_alloc_construct()\n");
         goto done;
     }
 
     if (zylib_log_construct(&log, alloc, 2) != ZYLIB_OK)
     {
-        fprintf(stderr, "ERROR: zylib_log_construct()\n");
+        fprintf(stderr, "zylib_log_construct()\n");
         goto done;
     }
 
     if (zylib_dequeue_construct(&dqe, alloc) != ZYLIB_OK)
     {
-        PRINT("ERROR: zylib_dequeue_construct()");
+        PRINT("zylib_dequeue_construct()");
         goto done;
     }
 
     if (!test_loop(dqe, zylib_dequeue_push_first, zylib_dequeue_peek_first))
     {
-        PRINT("ERROR: test_loop(); first");
+        PRINT("test_loop(): first");
         goto done;
     }
 
     if (!test_loop(dqe, zylib_dequeue_push_last, zylib_dequeue_peek_last))
     {
-        PRINT("ERROR: test_loop(); last");
+        PRINT("test_loop(): last");
         goto done;
     }
 

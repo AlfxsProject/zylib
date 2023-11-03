@@ -32,7 +32,7 @@ zylib_return_t simulated_realloc_incremental_grow(const zylib_alloc_t *const all
     zylib_return_t r;
     if ((r = zylib_malloc(alloc, size, &ptr_n)) != ZYLIB_OK)
     {
-        PRINT("ERROR: zylib_malloc");
+        PRINT("zylib_malloc");
         goto done;
     }
     memcpy(ptr_n, *ptr, size - 1);
@@ -53,7 +53,7 @@ bool test_loop(const zylib_alloc_t *const alloc,
     {
         if (realloc(alloc, BASE_SIZE + i, &ptr) != ZYLIB_OK)
         {
-            PRINT("ERROR: realloc(%u)", BASE_SIZE + i);
+            PRINT("realloc(%u)", BASE_SIZE + i);
             goto done;
         }
     }
@@ -74,25 +74,25 @@ int main()
 
     if (zylib_alloc_construct(&alloc, malloc, realloc, free) != ZYLIB_OK)
     {
-        fprintf(stderr, "ERROR: zylib_alloc_construct()\n");
+        fprintf(stderr, "zylib_alloc_construct()\n");
         goto done;
     }
 
     if (zylib_log_construct(&log, alloc, 2) != ZYLIB_OK)
     {
-        fprintf(stderr, "ERROR: zylib_log_construct()\n");
+        fprintf(stderr, "zylib_log_construct()\n");
         goto done;
     }
 
     if (!test_loop(alloc, zylib_realloc))
     {
-        PRINT("ERROR: test_loop: zylib_realloc");
+        PRINT("test_loop: zylib_realloc");
         goto done;
     }
 
     if (!test_loop(alloc, simulated_realloc_incremental_grow))
     {
-        PRINT("ERROR: test_loop: zylib_malloc");
+        PRINT("test_loop: zylib_malloc");
         goto done;
     }
 
