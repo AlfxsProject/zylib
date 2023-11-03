@@ -188,5 +188,5 @@ const void *zylib_error_box_peek_opaque(const zylib_error_box_t *bx, size_t *siz
     {
         *size = bx->box.size;
     }
-    return &bx->box.data;
+    return bx->box.data;
 }
