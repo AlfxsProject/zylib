@@ -105,6 +105,7 @@ zylib_return_t zylib_log_set_time_format(zylib_log_t *log, const char *format)
     log->time_format = format;
     return ZYLIB_OK;
 }
+
 const char *zylib_log_get_time_format(const zylib_log_t *log)
 {
     const char *const time_format = log->time_format;
