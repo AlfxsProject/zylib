@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wzero-length-array"
 #pragma once
 #include <stdbool.h>
 #include <stddef.h>
@@ -44,5 +42,3 @@ typedef enum zylib_return_e
     ZYLIB_ERROR_PERM,
     ZYLIB_ERROR_INPUT_VALUE
 } zylib_return_t;
-
-#pragma clang diagnostic pop

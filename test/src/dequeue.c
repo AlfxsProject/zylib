@@ -20,12 +20,12 @@
 #include <zylib_dequeue.h>
 #include <zylib_log.h>
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wgnu-zero-variadic-macro-arguments"
 #define SIZE (512U)
 #define ITERATIONS (10U)
 
-#define PRINT(format, ...) ZYLIB_LOG_ERROR(log, format, ##__VA_ARGS__)
+#define PRINT_INFO(format, ...) ZYLIB_LOG_INFO(log, format, ##__VA_ARGS__)
+#define PRINT_WARN(format, ...) ZYLIB_LOG_WARN(log, format, ##__VA_ARGS__)
+#define PRINT_ERROR(format, ...) ZYLIB_LOG_ERROR(log, format, ##__VA_ARGS__)
 
 static zylib_log_t *log = NULL;
 
@@ -35,13 +35,13 @@ static _Bool test_empty(const zylib_dequeue_t *dqe)
 
     if (zylib_dequeue_size(dqe) != 0)
     {
-        PRINT("zylib_dequeue_size()");
+        PRINT_ERROR("zylib_dequeue_size()");
         goto done;
     }
 
     if (!zylib_dequeue_is_empty(dqe))
     {
-        PRINT("zylib_dequeue_is_empty()");
+        PRINT_ERROR("zylib_dequeue_is_empty()");
         goto done;
     }
 
@@ -56,13 +56,13 @@ static _Bool test_size_positive_n(const zylib_dequeue_t *dqe, size_t n)
 
     if (zylib_dequeue_size(dqe) != n)
     {
-        PRINT("zylib_dequeue_size()");
+        PRINT_ERROR("zylib_dequeue_size()");
         goto done;
     }
 
     if (zylib_dequeue_is_empty(dqe))
     {
-        PRINT("zylib_dequeue_is_empty()");
+        PRINT_ERROR("zylib_dequeue_is_empty()");
         goto done;
     }
 
@@ -78,7 +78,7 @@ static _Bool test_loop(zylib_dequeue_t *dqe, zylib_return_t (*push)(zylib_dequeu
 
     if (!test_empty(dqe))
     {
-        PRINT("test_empty()");
+        PRINT_ERROR("test_empty()");
         goto done;
     }
 
@@ -91,19 +91,19 @@ static _Bool test_loop(zylib_dequeue_t *dqe, zylib_return_t (*push)(zylib_dequeu
 
         if (getrandom(box->data, box->size, 0) != (ssize_t)box->size)
         {
-            PRINT("getrandom()");
+            PRINT_ERROR("getrandom()");
             goto done;
         }
 
         if (push(dqe, box) != ZYLIB_OK)
         {
-            PRINT("push()");
+            PRINT_ERROR("push()");
             goto done;
         }
 
         if (!test_size_positive_n(dqe, i + 1))
         {
-            PRINT("test_size_positive_n");
+            PRINT_ERROR("test_size_positive_n");
             goto done;
         }
 
@@ -111,13 +111,13 @@ static _Bool test_loop(zylib_dequeue_t *dqe, zylib_return_t (*push)(zylib_dequeu
 
         if (box->size != first->size)
         {
-            PRINT("peek(): size");
+            PRINT_ERROR("peek(): size");
             goto done;
         }
 
         if (memcmp(box->data, first->data, box->size) != 0)
         {
-            PRINT("peek(): data");
+            PRINT_ERROR("peek(): data");
             goto done;
         }
     }
@@ -126,7 +126,7 @@ static _Bool test_loop(zylib_dequeue_t *dqe, zylib_return_t (*push)(zylib_dequeu
 
     if (!test_empty(dqe))
     {
-        PRINT("test_empty()");
+        PRINT_ERROR("test_empty()");
         goto done;
     }
 
@@ -148,8 +148,7 @@ int main()
         goto done;
     }
 
-    if (zylib_log_construct(&log, alloc, "zylib-test-dequeue-log.log",
-                            (zylib_log_severity_t)ZYLIB_LOG_OUTPUT_FORMAT_MAX, ZYLIB_FORMAT_PLAIN) != ZYLIB_OK)
+    if (zylib_log_construct(&log, alloc, "zylib-test-dequeue-log.log", ZYLIB_INFO, ZYLIB_FORMAT_PLAIN) != ZYLIB_OK)
     {
         fprintf(stderr, "zylib_log_construct()\n");
         goto done;
@@ -157,19 +156,19 @@ int main()
 
     if (zylib_dequeue_construct(&dqe, alloc) != ZYLIB_OK)
     {
-        PRINT("zylib_dequeue_construct()");
+        PRINT_ERROR("zylib_dequeue_construct()");
         goto done;
     }
 
     if (!test_loop(dqe, zylib_dequeue_push_first, zylib_dequeue_peek_first))
     {
-        PRINT("test_loop(): first");
+        PRINT_ERROR("test_loop(): first");
         goto done;
     }
 
     if (!test_loop(dqe, zylib_dequeue_push_last, zylib_dequeue_peek_last))
     {
-        PRINT("test_loop(): last");
+        PRINT_ERROR("test_loop(): last");
         goto done;
     }
 
@@ -189,4 +188,3 @@ done:
     }
     return r;
 }
-#pragma clang diagnostic pop

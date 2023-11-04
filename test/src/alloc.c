@@ -19,12 +19,12 @@
 #include <zylib_alloc.h>
 #include <zylib_log.h>
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wgnu-zero-variadic-macro-arguments"
 #define BASE_SIZE (1U)
 #define ITERATIONS (10U)
 
-#define PRINT(format, ...) ZYLIB_LOG_ERROR(log, format, ##__VA_ARGS__)
+#define PRINT_INFO(format, ...) ZYLIB_LOG_INFO(log, format, ##__VA_ARGS__)
+#define PRINT_WARN(format, ...) ZYLIB_LOG_WARN(log, format, ##__VA_ARGS__)
+#define PRINT_ERROR(format, ...) ZYLIB_LOG_ERROR(log, format, ##__VA_ARGS__)
 
 static zylib_log_t *log = NULL;
 
@@ -34,7 +34,7 @@ static zylib_return_t simulated_realloc_incremental_grow(const zylib_alloc_t *co
     zylib_return_t r;
     if ((r = zylib_malloc(alloc, size, &ptr_n)) != ZYLIB_OK)
     {
-        PRINT("zylib_malloc");
+        PRINT_ERROR("zylib_malloc");
         goto done;
     }
     memcpy(ptr_n, *ptr, size - 1);
@@ -55,7 +55,7 @@ static _Bool test_loop(const zylib_alloc_t *const alloc,
     {
         if (realloc(alloc, BASE_SIZE + i, &ptr) != ZYLIB_OK)
         {
-            PRINT("realloc(%u)", BASE_SIZE + i);
+            PRINT_ERROR("realloc(%u)", BASE_SIZE + i);
             goto done;
         }
     }
@@ -80,8 +80,7 @@ int main()
         goto done;
     }
 
-    if (zylib_log_construct(&log, alloc, "zylib-test-alloc-log.log", (zylib_log_severity_t)ZYLIB_LOG_OUTPUT_FORMAT_MAX,
-                            ZYLIB_FORMAT_PLAIN) != ZYLIB_OK)
+    if (zylib_log_construct(&log, alloc, "zylib-test-alloc-log.log", ZYLIB_INFO, ZYLIB_FORMAT_PLAIN) != ZYLIB_OK)
     {
         fprintf(stderr, "zylib_log_construct()\n");
         goto done;
@@ -89,13 +88,13 @@ int main()
 
     if (!test_loop(alloc, zylib_realloc))
     {
-        PRINT("test_loop: zylib_realloc");
+        PRINT_ERROR("test_loop: zylib_realloc");
         goto done;
     }
 
     if (!test_loop(alloc, simulated_realloc_incremental_grow))
     {
-        PRINT("test_loop: zylib_malloc");
+        PRINT_ERROR("test_loop: zylib_malloc");
         goto done;
     }
 
@@ -111,5 +110,3 @@ done:
     }
     return r;
 }
-
-#pragma clang diagnostic pop

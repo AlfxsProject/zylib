@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCUnusedMacroInspection"
-#pragma clang diagnostic ignored "-Wunused-macros"
 #pragma once
 #include "zylib_alloc.h"
 
@@ -36,7 +33,7 @@ typedef enum zylib_log_severity_e
  * Constants
  */
 
-#define ZYLIB_LOG_MAX_MESSAGE_SEVERITY_MAX (ZYLIB_INFO)
+#define ZYLIB_LOG_SEVERITY_MAX (ZYLIB_INFO)
 #define ZYLIB_LOG_OUTPUT_FORMAT_MAX (ZYLIB_FORMAT_XML)
 
 #define ZYLIB_LOG_MAX_MESSAGE_SIZE_DEFAULT (1024U)
@@ -85,5 +82,3 @@ extern "C"
 #ifdef __cplusplus
 }
 #endif
-
-#pragma clang diagnostic pop

@@ -21,12 +21,12 @@
 #include <zylib_error.h>
 #include <zylib_log.h>
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wgnu-zero-variadic-macro-arguments"
 #define SIZE (512U)
 #define ITERATIONS (10U)
 
-#define PRINT(format, ...) ZYLIB_LOG_ERROR(log, format, ##__VA_ARGS__)
+#define PRINT_INFO(format, ...) ZYLIB_LOG_INFO(log, format, ##__VA_ARGS__)
+#define PRINT_WARN(format, ...) ZYLIB_LOG_WARN(log, format, ##__VA_ARGS__)
+#define PRINT_ERROR(format, ...) ZYLIB_LOG_ERROR(log, format, ##__VA_ARGS__)
 
 static zylib_log_t *log = NULL;
 
@@ -36,15 +36,19 @@ static _Bool test_empty(const zylib_error_t *const error)
 
     if (zylib_error_size(error) != 0)
     {
-        PRINT("zylib_error_size()");
+        PRINT_ERROR("zylib_error_size(expect 0): fail");
         goto done;
     }
 
+    PRINT_INFO("zylib_error_size(expect 0): pass");
+
     if (!zylib_error_is_empty(error))
     {
-        PRINT("zylib_error_is_empty()");
+        PRINT_ERROR("zylib_error_is_empty(expect true): fail");
         goto done;
     }
+
+    PRINT_INFO("zylib_error_is_empty(expect true): pass");
 
     r = true;
 done:
@@ -57,15 +61,19 @@ static _Bool test_size_positive_n(const zylib_error_t *error, uint64_t n)
 
     if (zylib_error_size(error) != n)
     {
-        PRINT("zylib_error_size()");
+        PRINT_ERROR("zylib_error_size(expect %lu): fail", n);
         goto done;
     }
 
+    PRINT_INFO("zylib_error_size(expect %lu): pass", n);
+
     if (zylib_error_is_empty(error))
     {
-        PRINT("zylib_error_is_empty()");
+        PRINT_ERROR("zylib_error_is_empty(expect false): fail");
         goto done;
     }
+
+    PRINT_INFO("zylib_error_is_empty(expect false): pass");
 
     r = true;
 done:
@@ -81,9 +89,11 @@ static _Bool test_loop(zylib_error_t *error,
 
     if (!test_empty(error))
     {
-        PRINT("test_empty()");
+        PRINT_ERROR("test_empty(): fail");
         goto done;
     }
+
+    PRINT_INFO("test_empty(): pass");
 
     for (unsigned int i = 0; i < ITERATIONS; ++i)
     {
@@ -102,9 +112,11 @@ static _Bool test_loop(zylib_error_t *error,
 
         if (getrandom(ptr, SIZE, 0) != SIZE)
         {
-            PRINT("getrandom()");
+            PRINT_ERROR("getrandom(): fail");
             goto done;
         }
+
+        PRINT_INFO("getrandom(): pass");
 
         ptr->box.size = sizeof(buf) - sizeof(struct ptr_s);
         ptr->file = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z";
@@ -112,70 +124,90 @@ static _Bool test_loop(zylib_error_t *error,
 
         if (push(error, ptr->code, ptr->file, ptr->line, ptr->function, &ptr->box) != ZYLIB_OK)
         {
-            PRINT("push()");
+            PRINT_ERROR("push(): fail");
             goto done;
         }
 
+        PRINT_INFO("push(): pass");
+
         if (!test_size_positive_n(error, i + 1))
         {
-            PRINT("test_size_positive_n");
+            PRINT_ERROR("test_size_positive_n(%u): fail", i + 1);
             goto done;
         }
+
+        PRINT_INFO("test_size_positive_n(%u): pass", i + 1);
 
         error_box = peek(error);
 
         if (error_box == NULL)
         {
-            PRINT("peek");
+            PRINT_ERROR("peek(): fail");
             goto done;
         }
+
+        PRINT_INFO("peek(): pass");
 
         if (ptr->code != zylib_error_box_peek_code(error_box))
         {
-            PRINT("zylib_error_box_peek_code");
+            PRINT_ERROR("zylib_error_box_peek_code(expect %ld): fail", ptr->code);
             goto done;
         }
+
+        PRINT_INFO("zylib_error_box_peek_code(expect %ld): pass", ptr->code);
 
         if (strcmp(ptr->file, zylib_error_box_peek_file(error_box)) != 0)
         {
-            PRINT("zylib_error_box_peek_file");
+            PRINT_ERROR("zylib_error_box_peek_file(): fail");
             goto done;
         }
+
+        PRINT_INFO("zylib_error_box_peek_file(): pass");
 
         if (ptr->line != zylib_error_box_peek_line_number(error_box))
         {
-            PRINT("zylib_error_box_peek_line_number");
+            PRINT_ERROR("zylib_error_box_peek_line_number(expect %lu): fail", ptr->line);
             goto done;
         }
 
+        PRINT_INFO("zylib_error_box_peek_line_number(): pass");
+
         if (strcmp(ptr->function, zylib_error_box_peek_function(error_box)) != 0)
         {
-            PRINT("zylib_error_box_peek_function");
+            PRINT_ERROR("zylib_error_box_peek_function(): fail");
             goto done;
         }
+
+        PRINT_INFO("zylib_error_box_peek_function(): pass");
 
         data = zylib_error_box_peek_opaque(error_box, &size);
 
         if (ptr->box.size != size)
         {
-            PRINT("zylib_error_box_peek_opaque(): size");
+            PRINT_ERROR("zylib_error_box_peek_opaque(size): fail");
             goto done;
         }
 
+        PRINT_INFO("zylib_error_box_peek_opaque(size): pass");
+
         if (memcmp(ptr->box.data, data, ptr->box.size) != 0)
         {
-            PRINT("zylib_error_box_peek_opaque(): data");
+            PRINT_ERROR("zylib_error_box_peek_opaque(): data");
             goto done;
         }
+
+        PRINT_INFO("zylib_error_box_peek_opaque(data): pass");
     }
 
     zylib_error_clear(error);
 
     if (!test_empty(error))
     {
-        PRINT("test_empty()");
+        PRINT_ERROR("test_empty(): fail");
         goto done;
     }
+
+    PRINT_INFO("test_empty(): pass");
 
     r = true;
 done:
@@ -194,8 +226,7 @@ int main()
         goto done;
     }
 
-    if (zylib_log_construct(&log, alloc, "zylib-test-error-log.log", (zylib_log_severity_t)ZYLIB_LOG_OUTPUT_FORMAT_MAX,
-                            ZYLIB_FORMAT_PLAIN) != ZYLIB_OK)
+    if (zylib_log_construct(&log, alloc, "zylib-test-error-log.log", ZYLIB_INFO, ZYLIB_FORMAT_PLAIN) != ZYLIB_OK)
     {
         fprintf(stderr, "zylib_log_construct()\n");
         goto done;
@@ -203,21 +234,27 @@ int main()
 
     if (zylib_error_construct(&error, alloc) != ZYLIB_OK)
     {
-        PRINT("zylib_error_construct()");
+        PRINT_ERROR("zylib_error_construct(): fail");
         goto done;
     }
+
+    PRINT_INFO("zylib_error_construct(): pass");
 
     if (!test_loop(error, zylib_error_push_first, zylib_error_peek_first))
     {
-        PRINT("test_loop(): first");
+        PRINT_ERROR("test_loop(first(): fail");
         goto done;
     }
 
+    PRINT_INFO("test_loop(first): pass");
+
     if (!test_loop(error, zylib_error_push_last, zylib_error_peek_last))
     {
-        PRINT("test_loop(): last");
+        PRINT_ERROR("test_loop(last(): fail");
         goto done;
     }
+
+    PRINT_INFO("test_loop(last): pass");
 
     r = EXIT_SUCCESS;
 done:
@@ -235,4 +272,3 @@ done:
     }
     return r;
 }
-#pragma clang diagnostic pop

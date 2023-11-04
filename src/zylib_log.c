@@ -29,10 +29,21 @@ struct zylib_log_s
 zylib_return_t zylib_log_construct(zylib_log_t **log, const zylib_alloc_t *alloc, const char *path,
                                    zylib_log_severity_t severity, zylib_format_t format)
 {
-    zylib_return_t r = ZYLIB_ERROR_OOM;
+    zylib_return_t r;
     FILE *file;
+    if (severity > ZYLIB_LOG_SEVERITY_MAX)
+    {
+        r = ZYLIB_ERROR_INPUT_VALUE;
+        goto done;
+    }
+    if (format > ZYLIB_LOG_OUTPUT_FORMAT_MAX)
+    {
+        r = ZYLIB_ERROR_INPUT_VALUE;
+        goto done;
+    }
     if ((file = fopen(path, "w")) == NULL)
     {
+        r = ZYLIB_ERROR_OOM;
         goto done;
     }
     if ((r = zylib_malloc(alloc, sizeof(zylib_log_t), (void **)log)) != ZYLIB_OK)
