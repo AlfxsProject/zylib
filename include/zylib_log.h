@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 #pragma once
-#include "zylib_alloc.h"
+#include "zylib_allocator.h"
 
 /*
  * Types
@@ -24,17 +24,25 @@ typedef struct zylib_log_s zylib_log_t;
 
 typedef enum zylib_log_severity_e
 {
+    ZYLIB_FATAL,
     ZYLIB_ERROR,
     ZYLIB_WARN,
     ZYLIB_INFO
 } zylib_log_severity_t;
+
+typedef enum zylib_log_format_e
+{
+    ZYLIB_LOG_FORMAT_PLAIN,
+    ZYLIB_LOG_FORMAT_CSV,
+    ZYLIB_LOG_FORMAT_XML
+} zylib_log_format_t;
 
 /*
  * Constants
  */
 
 #define ZYLIB_LOG_SEVERITY_MAX (ZYLIB_INFO)
-#define ZYLIB_LOG_OUTPUT_FORMAT_MAX (ZYLIB_FORMAT_XML)
+#define ZYLIB_LOG_OUTPUT_FORMAT_MAX (ZYLIB_LOG_FORMAT_XML)
 
 #define ZYLIB_LOG_MAX_MESSAGE_SIZE_DEFAULT (1024U)
 #define ZYLIB_LOG_TIME_FORMAT_DEFAULT ("%a %b %d %H:%M:%S %Z %Y")
@@ -62,23 +70,14 @@ typedef enum zylib_log_severity_e
  * Functions
  */
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
+ZYLIB_BEGIN_DECLS
 
-    __attribute__((nonnull)) zylib_return_t zylib_log_construct(zylib_log_t **log, const zylib_alloc_t *alloc,
-                                                                const char *path, zylib_log_severity_t severity,
-                                                                zylib_format_t format);
-    __attribute__((nonnull)) void zylib_log_destruct(zylib_log_t **log);
+zylib_return_t zylib_log_construct(zylib_log_t **log, const zylib_allocator_t *alloc, const char *path,
+                                   zylib_log_severity_t severity, zylib_log_format_t format);
+void zylib_log_destruct(zylib_log_t **log);
 
-    /* Internal Use Only. */
-    __attribute__((nonnull)) __attribute__((format(printf, 6, 7))) size_t zylib_log_write(const zylib_log_t *log,
-                                                                                          zylib_log_severity_t severity,
-                                                                                          const char *file, size_t line,
-                                                                                          const char *function,
-                                                                                          const char *format, ...);
+/* Internal Use Only. */
+size_t zylib_log_write(const zylib_log_t *log, zylib_log_severity_t severity, const char *file, size_t line,
+                       const char *function, const char *format, ...);
 
-#ifdef __cplusplus
-}
-#endif
+ZYLIB_END_DECLS

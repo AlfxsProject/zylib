@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "zylib_dequeue.h"
+#include "zylib_log.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/random.h>
-#include <zylib_dequeue.h>
-#include <zylib_log.h>
 
 #define SIZE (512U)
 #define ITERATIONS (10U)
@@ -139,16 +139,16 @@ int main()
 {
     int r = EXIT_FAILURE;
 
-    zylib_alloc_t *alloc = NULL;
+    zylib_allocator_t *alloc = NULL;
     zylib_dequeue_t *dqe = NULL;
 
-    if (zylib_alloc_construct(&alloc, malloc, realloc, free) != ZYLIB_OK)
+    if (zylib_allocator_construct(&alloc, malloc, realloc, free) != ZYLIB_OK)
     {
-        fprintf(stderr, "zylib_alloc_construct()\n");
+        fprintf(stderr, "zylib_allocator_construct()\n");
         goto done;
     }
 
-    if (zylib_log_construct(&log, alloc, "zylib-test-dequeue-log.log", ZYLIB_INFO, ZYLIB_FORMAT_PLAIN) != ZYLIB_OK)
+    if (zylib_log_construct(&log, alloc, "zylib-test-dequeue-log.log", ZYLIB_INFO, ZYLIB_LOG_FORMAT_PLAIN) != ZYLIB_OK)
     {
         fprintf(stderr, "zylib_log_construct()\n");
         goto done;
@@ -184,7 +184,7 @@ done:
     }
     if (alloc != NULL)
     {
-        zylib_alloc_destruct(&alloc);
+        zylib_allocator_destruct(&alloc);
     }
     return r;
 }

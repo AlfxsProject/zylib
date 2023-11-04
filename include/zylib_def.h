@@ -18,27 +18,29 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#if defined(__cplusplus)
+#define ZYLIB_BEGIN_DECLS                                                                                              \
+    extern "C"                                                                                                         \
+    {
+#else
+#define ZYLIB_BEGIN_DECLS
+#endif
+
+#if defined(__cplusplus)
+#define ZYLIB_END_DECLS }
+#else
+#define ZYLIB_END_DECLS
+#endif
+
 typedef struct zylib_box_s
 {
     uint64_t size;
     unsigned char data[0];
 } zylib_box_t;
 
-typedef enum zylib_format_e
-{
-    ZYLIB_FORMAT_PLAIN,
-    ZYLIB_FORMAT_CSV,
-    ZYLIB_FORMAT_XML
-} zylib_format_t;
-
 typedef enum zylib_return_e
 {
     ZYLIB_OK,
-    ZYLIB_ERROR_UNKNOWN,
     ZYLIB_ERROR_OOM,
-    ZYLIB_ERROR_DEADLOCK,
-    ZYLIB_ERROR_UNINITIALIZED,
-    ZYLIB_ERROR_BUSY,
-    ZYLIB_ERROR_PERM,
     ZYLIB_ERROR_INPUT_VALUE
 } zylib_return_t;

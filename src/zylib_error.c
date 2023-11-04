@@ -23,7 +23,7 @@
 
 struct zylib_error_s
 {
-    const zylib_alloc_t *alloc;
+    const zylib_allocator_t *alloc;
     zylib_dequeue_t *dequeue;
 };
 
@@ -53,7 +53,7 @@ static zylib_return_t zylib_error_push(zylib_error_t *err, int64_t code, const c
     const uint64_t box_size = box == NULL ? 0 : box->size;
     const uint64_t total_size = sizeof(struct buf_s) + sizeof(zylib_box_t) + box_size;
 
-    zylib_return_t r = zylib_malloc(err->alloc, total_size, (void **)&buf);
+    zylib_return_t r = zylib_allocator_malloc(err->alloc, total_size, (void **)&buf);
     if (r == ZYLIB_OK)
     {
         buf->size = sizeof(zylib_error_box_t) + sizeof(*box) + box_size;
@@ -64,14 +64,14 @@ static zylib_return_t zylib_error_push(zylib_error_t *err, int64_t code, const c
         buf->bx.box.size = box_size;
         memcpy(buf->bx.box.data, box->data, box_size);
         r = push(err->dequeue, (const zylib_box_t *)buf);
-        zylib_free(err->alloc, (void **)&buf);
+        zylib_allocator_free(err->alloc, (void **)&buf);
     }
     return r;
 }
 
-zylib_return_t zylib_error_construct(zylib_error_t **err, const zylib_alloc_t *alloc)
+zylib_return_t zylib_error_construct(zylib_error_t **err, const zylib_allocator_t *alloc)
 {
-    zylib_return_t r = zylib_malloc(alloc, sizeof(zylib_error_t), (void **)err);
+    zylib_return_t r = zylib_allocator_malloc(alloc, sizeof(zylib_error_t), (void **)err);
 
     if (r == ZYLIB_OK)
     {
@@ -84,7 +84,7 @@ zylib_return_t zylib_error_construct(zylib_error_t **err, const zylib_alloc_t *a
         }
         else
         {
-            zylib_free(alloc, (void **)err);
+            zylib_allocator_free(alloc, (void **)err);
         }
     }
     return r;
@@ -95,7 +95,7 @@ void zylib_error_destruct(zylib_error_t **err)
     if (*err != NULL)
     {
         zylib_dequeue_destruct(&(*err)->dequeue);
-        zylib_free((*err)->alloc, (void **)err);
+        zylib_allocator_free((*err)->alloc, (void **)err);
     }
 }
 
