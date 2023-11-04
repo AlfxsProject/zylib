@@ -42,7 +42,7 @@ struct zylib_error_box_s
 
 zylib_return_t zylib_error_construct(zylib_error_t **err, const zylib_alloc_t *alloc)
 {
-    int r = zylib_malloc(alloc, sizeof(zylib_error_t), (void **)err);
+    zylib_return_t r = zylib_malloc(alloc, sizeof(zylib_error_t), (void **)err);
 
     if (r == ZYLIB_OK)
     {
@@ -63,7 +63,7 @@ zylib_return_t zylib_error_construct(zylib_error_t **err, const zylib_alloc_t *a
 
 void zylib_error_destruct(zylib_error_t **err)
 {
-    if (*err != nullptr)
+    if (*err != NULL)
     {
         zylib_dequeue_destruct(&(*err)->dequeue);
         zylib_free((*err)->alloc, (void **)err);
@@ -84,10 +84,10 @@ zylib_return_t zylib_error_push_first(zylib_error_t *err, int64_t code, const ch
         zylib_error_box_t bx;
     } *buf;
 
-    const size_t box_size = box == nullptr ? 0 : box->size;
+    const size_t box_size = box == NULL ? 0 : box->size;
     const size_t total_size = sizeof(struct buf_s) + sizeof(zylib_box_t) + box_size;
 
-    int r = zylib_malloc(err->alloc, total_size, (void **)&buf);
+    zylib_return_t r = zylib_malloc(err->alloc, total_size, (void **)&buf);
     if (r == ZYLIB_OK)
     {
         buf->size = sizeof(zylib_error_box_t) + sizeof(*box) + box_size;
@@ -112,10 +112,10 @@ zylib_return_t zylib_error_push_last(zylib_error_t *err, int64_t code, const cha
         zylib_error_box_t bx;
     } *buf;
 
-    const size_t box_size = box == nullptr ? 0 : box->size;
+    const size_t box_size = box == NULL ? 0 : box->size;
     const size_t total_size = sizeof(struct buf_s) + sizeof(zylib_box_t) + box_size;
 
-    int r = zylib_malloc(err->alloc, total_size, (void **)&buf);
+    zylib_return_t r = zylib_malloc(err->alloc, total_size, (void **)&buf);
     if (r == ZYLIB_OK)
     {
         buf->size = sizeof(zylib_error_box_t) + sizeof(*box) + box_size;
@@ -141,14 +141,14 @@ void zylib_error_discard_last(zylib_error_t *err)
     zylib_dequeue_discard_last(err->dequeue);
 }
 
-zylib_error_box_t *zylib_error_peek_first(const zylib_error_t *err)
+const zylib_error_box_t *zylib_error_peek_first(const zylib_error_t *err)
 {
-    return (zylib_error_box_t *)(&((zylib_box_t *)zylib_dequeue_peek_first(err->dequeue))->data);
+    return (const zylib_error_box_t *)zylib_dequeue_peek_first(err->dequeue)->data;
 }
 
-zylib_error_box_t *zylib_error_peek_last(const zylib_error_t *err)
+const zylib_error_box_t *zylib_error_peek_last(const zylib_error_t *err)
 {
-    return (zylib_error_box_t *)(&((zylib_box_t *)zylib_dequeue_peek_last(err->dequeue))->data);
+    return (const zylib_error_box_t *)zylib_dequeue_peek_last(err->dequeue)->data;
 }
 
 size_t zylib_error_size(const zylib_error_t *err)
@@ -156,7 +156,7 @@ size_t zylib_error_size(const zylib_error_t *err)
     return zylib_dequeue_size(err->dequeue);
 }
 
-bool zylib_error_is_empty(const zylib_error_t *err)
+_Bool zylib_error_is_empty(const zylib_error_t *err)
 {
     return zylib_dequeue_is_empty(err->dequeue);
 }
@@ -183,7 +183,7 @@ const char *zylib_error_box_peek_function(const zylib_error_box_t *bx)
 
 const void *zylib_error_box_peek_opaque(const zylib_error_box_t *bx, size_t *size)
 {
-    if (size != nullptr)
+    if (size != NULL)
     {
         *size = bx->box.size;
     }

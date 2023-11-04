@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-macros"
 #pragma once
 #include "zylib_alloc.h"
 
@@ -98,3 +100,5 @@ extern "C"
 #ifdef __cplusplus
 }
 #endif
+
+#pragma clang diagnostic pop

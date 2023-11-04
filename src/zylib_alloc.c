@@ -34,7 +34,7 @@ zylib_return_t zylib_alloc_construct(zylib_alloc_t **alloc, zylib_malloc_t mallo
                                      zylib_free_t free)
 {
     *alloc = malloc(sizeof(zylib_alloc_t));
-    if (*alloc != nullptr)
+    if (*alloc != NULL)
     {
         (*alloc)->malloc = malloc;
         (*alloc)->realloc = realloc;
@@ -46,18 +46,18 @@ zylib_return_t zylib_alloc_construct(zylib_alloc_t **alloc, zylib_malloc_t mallo
 
 void zylib_alloc_destruct(zylib_alloc_t **alloc)
 {
-    if (*alloc != nullptr)
+    if (*alloc != NULL)
     {
         const zylib_free_t free = (*alloc)->free;
         free((void *)*alloc);
-        *alloc = nullptr;
+        *alloc = NULL;
     }
 }
 
 zylib_return_t zylib_malloc(const zylib_alloc_t *alloc, size_t size, void **ptr)
 {
     *ptr = alloc->malloc(size);
-    if (*ptr != nullptr)
+    if (*ptr != NULL)
     {
         return ZYLIB_OK;
     }
@@ -67,7 +67,7 @@ zylib_return_t zylib_malloc(const zylib_alloc_t *alloc, size_t size, void **ptr)
 zylib_return_t zylib_realloc(const zylib_alloc_t *alloc, size_t size, void **ptr)
 {
     void *x_ptr = alloc->realloc(*ptr, size);
-    if (x_ptr != nullptr)
+    if (x_ptr != NULL)
     {
         *ptr = x_ptr;
         return ZYLIB_OK;
@@ -78,5 +78,5 @@ zylib_return_t zylib_realloc(const zylib_alloc_t *alloc, size_t size, void **ptr
 void zylib_free(const zylib_alloc_t *alloc, void **ptr)
 {
     alloc->free(*ptr);
-    *ptr = nullptr;
+    *ptr = NULL;
 }

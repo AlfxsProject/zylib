@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 #include "zylib_dequeue.h"
-#include <stdatomic.h>
 #include <string.h>
 
 typedef struct zylib_dequeue_bx_s
@@ -28,7 +27,7 @@ struct zylib_dequeue_s
 {
     const zylib_alloc_t *alloc;
     zylib_dequeue_box_t *first, *last;
-    atomic_size_t size;
+    size_t size;
 };
 
 __attribute__((nonnull)) static zylib_return_t zylib_dequeue_bx_construct(zylib_dequeue_box_t **bx,
@@ -39,8 +38,8 @@ __attribute__((nonnull)) static zylib_return_t zylib_dequeue_bx_construct(zylib_
     if (r == ZYLIB_OK)
     {
         (*bx)->alloc = alloc;
-        (*bx)->previous = nullptr;
-        (*bx)->next = nullptr;
+        (*bx)->previous = NULL;
+        (*bx)->next = NULL;
         memcpy(&(*bx)->box, box, sizeof(zylib_box_t) + box->size);
     }
     return r;
@@ -48,7 +47,7 @@ __attribute__((nonnull)) static zylib_return_t zylib_dequeue_bx_construct(zylib_
 
 __attribute__((nonnull)) static void zylib_dequeue_bx_destruct(zylib_dequeue_box_t **bx)
 {
-    if (*bx != nullptr)
+    if (*bx != NULL)
     {
         zylib_free((*bx)->alloc, (void **)bx);
     }
@@ -56,12 +55,12 @@ __attribute__((nonnull)) static void zylib_dequeue_bx_destruct(zylib_dequeue_box
 
 zylib_return_t zylib_dequeue_construct(zylib_dequeue_t **dqe, const zylib_alloc_t *alloc)
 {
-    int r = zylib_malloc(alloc, sizeof(zylib_dequeue_t), (void **)dqe);
+    zylib_return_t r = zylib_malloc(alloc, sizeof(zylib_dequeue_t), (void **)dqe);
     if (r == ZYLIB_OK)
     {
         (*dqe)->alloc = alloc;
-        (*dqe)->first = nullptr;
-        (*dqe)->last = nullptr;
+        (*dqe)->first = NULL;
+        (*dqe)->last = NULL;
         (*dqe)->size = 0;
     }
     return r;
@@ -69,7 +68,7 @@ zylib_return_t zylib_dequeue_construct(zylib_dequeue_t **dqe, const zylib_alloc_
 
 void zylib_dequeue_destruct(zylib_dequeue_t **dqe)
 {
-    if (*dqe != nullptr)
+    if (*dqe != NULL)
     {
         zylib_dequeue_clear(*dqe);
         zylib_free((*dqe)->alloc, (void **)dqe);
@@ -79,14 +78,14 @@ void zylib_dequeue_destruct(zylib_dequeue_t **dqe)
 void zylib_dequeue_clear(zylib_dequeue_t *dqe)
 {
     zylib_dequeue_box_t *bx = dqe->first;
-    while (bx != nullptr)
+    while (bx != NULL)
     {
         zylib_dequeue_box_t *next = bx->next;
         zylib_dequeue_bx_destruct(&bx);
         bx = next;
     }
-    dqe->first = nullptr;
-    dqe->last = nullptr;
+    dqe->first = NULL;
+    dqe->last = NULL;
     dqe->size = 0;
 }
 
@@ -115,7 +114,7 @@ zylib_return_t zylib_dequeue_push_first(zylib_dequeue_t *dqe, const zylib_box_t 
 zylib_return_t zylib_dequeue_push_last(zylib_dequeue_t *dqe, const zylib_box_t *box)
 {
     zylib_dequeue_box_t *bx;
-    int r = zylib_dequeue_bx_construct(&bx, dqe->alloc, box);
+    zylib_return_t r = zylib_dequeue_bx_construct(&bx, dqe->alloc, box);
     if (r == ZYLIB_OK)
     {
         if (dqe->size != 0)
@@ -139,15 +138,15 @@ void zylib_dequeue_discard_first(zylib_dequeue_t *dqe)
     if (dqe->size != 0)
     {
         zylib_dequeue_box_t *bx = dqe->first;
-        if (bx->next != nullptr)
+        if (bx->next != NULL)
         {
-            bx->next->previous = nullptr;
+            bx->next->previous = NULL;
             dqe->first = bx->next;
         }
         else
         {
-            dqe->first = nullptr;
-            dqe->last = nullptr;
+            dqe->first = NULL;
+            dqe->last = NULL;
         }
         zylib_dequeue_bx_destruct(&bx);
         --dqe->size;
@@ -159,15 +158,15 @@ void zylib_dequeue_discard_last(zylib_dequeue_t *dqe)
     if (dqe->size != 0)
     {
         zylib_dequeue_box_t *bx = dqe->last;
-        if (bx->previous != nullptr)
+        if (bx->previous != NULL)
         {
-            bx->previous->next = nullptr;
+            bx->previous->next = NULL;
             dqe->last = bx->previous;
         }
         else
         {
-            dqe->first = nullptr;
-            dqe->last = nullptr;
+            dqe->first = NULL;
+            dqe->last = NULL;
         }
         zylib_dequeue_bx_destruct(&bx);
         --dqe->size;
@@ -189,7 +188,7 @@ size_t zylib_dequeue_size(const zylib_dequeue_t *dqe)
     return dqe->size;
 }
 
-bool zylib_dequeue_is_empty(const zylib_dequeue_t *dqe)
+_Bool zylib_dequeue_is_empty(const zylib_dequeue_t *dqe)
 {
     return dqe->size == 0;
 }

@@ -33,7 +33,7 @@ extern "C"
     __attribute__((nonnull)) const zylib_box_t *zylib_dequeue_peek_first(const zylib_dequeue_t *dqe);
     __attribute__((nonnull)) const zylib_box_t *zylib_dequeue_peek_last(const zylib_dequeue_t *dqe);
     __attribute__((nonnull)) size_t zylib_dequeue_size(const zylib_dequeue_t *dqe);
-    __attribute__((nonnull)) bool zylib_dequeue_is_empty(const zylib_dequeue_t *dqe);
+    __attribute__((nonnull)) _Bool zylib_dequeue_is_empty(const zylib_dequeue_t *dqe);
 
 #ifdef __cplusplus
 }
