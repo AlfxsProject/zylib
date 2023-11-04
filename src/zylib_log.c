@@ -51,6 +51,7 @@ void zylib_log_destruct(zylib_log_t **log)
 {
     if (*log != NULL)
     {
+        fclose((*log)->log_file);
         zylib_free((const zylib_alloc_t *)(*log)->alloc, (void **)log);
     }
 }
