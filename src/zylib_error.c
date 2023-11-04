@@ -40,6 +40,35 @@ struct zylib_error_box_s
  * Functions
  */
 
+static zylib_return_t zylib_error_push(zylib_error_t *err, int64_t code, const char *file, uint64_t line,
+                                       const char *function, const zylib_box_t *box,
+                                       zylib_return_t (*push)(zylib_dequeue_t *dqe, const zylib_box_t *box))
+{
+    struct buf_s
+    {
+        uint64_t size;
+        zylib_error_box_t bx;
+    } *buf;
+
+    const uint64_t box_size = box == NULL ? 0 : box->size;
+    const uint64_t total_size = sizeof(struct buf_s) + sizeof(zylib_box_t) + box_size;
+
+    zylib_return_t r = zylib_malloc(err->alloc, total_size, (void **)&buf);
+    if (r == ZYLIB_OK)
+    {
+        buf->size = sizeof(zylib_error_box_t) + sizeof(*box) + box_size;
+        buf->bx.code = code;
+        buf->bx.file = file;
+        buf->bx.line = line;
+        buf->bx.function = function;
+        buf->bx.box.size = box_size;
+        memcpy(buf->bx.box.data, box->data, box_size);
+        r = push(err->dequeue, (const zylib_box_t *)buf);
+        zylib_free(err->alloc, (void **)&buf);
+    }
+    return r;
+}
+
 zylib_return_t zylib_error_construct(zylib_error_t **err, const zylib_alloc_t *alloc)
 {
     zylib_return_t r = zylib_malloc(alloc, sizeof(zylib_error_t), (void **)err);
@@ -78,57 +107,13 @@ void zylib_error_clear(zylib_error_t *err)
 zylib_return_t zylib_error_push_first(zylib_error_t *err, int64_t code, const char *file, uint64_t line,
                                       const char *function, const zylib_box_t *box)
 {
-    struct buf_s
-    {
-        uint64_t size;
-        zylib_error_box_t bx;
-    } *buf;
-
-    const uint64_t box_size = box == NULL ? 0 : box->size;
-    const uint64_t total_size = sizeof(struct buf_s) + sizeof(zylib_box_t) + box_size;
-
-    zylib_return_t r = zylib_malloc(err->alloc, total_size, (void **)&buf);
-    if (r == ZYLIB_OK)
-    {
-        buf->size = sizeof(zylib_error_box_t) + sizeof(*box) + box_size;
-        buf->bx.code = code;
-        buf->bx.file = file;
-        buf->bx.line = line;
-        buf->bx.function = function;
-        buf->bx.box.size = box_size;
-        memcpy(buf->bx.box.data, box->data, box_size);
-        r = zylib_dequeue_push_first(err->dequeue, (const zylib_box_t *)buf);
-        zylib_free(err->alloc, (void **)&buf);
-    }
-    return r;
+    return zylib_error_push(err, code, file, line, function, box, zylib_dequeue_push_first);
 }
 
 zylib_return_t zylib_error_push_last(zylib_error_t *err, int64_t code, const char *file, uint64_t line,
                                      const char *function, const zylib_box_t *box)
 {
-    struct buf_s
-    {
-        uint64_t size;
-        zylib_error_box_t bx;
-    } *buf;
-
-    const uint64_t box_size = box == NULL ? 0 : box->size;
-    const uint64_t total_size = sizeof(struct buf_s) + sizeof(zylib_box_t) + box_size;
-
-    zylib_return_t r = zylib_malloc(err->alloc, total_size, (void **)&buf);
-    if (r == ZYLIB_OK)
-    {
-        buf->size = sizeof(zylib_error_box_t) + sizeof(*box) + box_size;
-        buf->bx.code = code;
-        buf->bx.file = file;
-        buf->bx.line = line;
-        buf->bx.function = function;
-        buf->bx.box.size = box_size;
-        memcpy(buf->bx.box.data, box->data, box_size);
-        r = zylib_dequeue_push_last(err->dequeue, (const zylib_box_t *)buf);
-        zylib_free(err->alloc, (void **)&buf);
-    }
-    return r;
+    return zylib_error_push(err, code, file, line, function, box, zylib_dequeue_push_last);
 }
 
 void zylib_error_discard_first(zylib_error_t *err)
