@@ -183,7 +183,7 @@ const zylib_box_t *zylib_dequeue_peek_last(const zylib_dequeue_t *dqe)
     return (const zylib_box_t *)&dqe->last->box;
 }
 
-size_t zylib_dequeue_size(const zylib_dequeue_t *dqe)
+uint64_t zylib_dequeue_size(const zylib_dequeue_t *dqe)
 {
     return dqe->size;
 }

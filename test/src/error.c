@@ -21,16 +21,18 @@
 #include <zylib_error.h>
 #include <zylib_log.h>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wgnu-zero-variadic-macro-arguments"
 #define SIZE (512U)
 #define ITERATIONS (10U)
 
 #define PRINT(format, ...) ZYLIB_LOG_ERROR(log, format, ##__VA_ARGS__)
 
-static zylib_log_t *log = nullptr;
+static zylib_log_t *log = NULL;
 
-bool test_empty(const zylib_error_t *const error)
+static _Bool test_empty(const zylib_error_t *const error)
 {
-    bool r = false;
+    _Bool r = false;
 
     if (zylib_error_size(error) != 0)
     {
@@ -49,9 +51,9 @@ done:
     return r;
 }
 
-bool test_size_positive_n(const zylib_error_t *error, size_t n)
+static _Bool test_size_positive_n(const zylib_error_t *error, uint64_t n)
 {
-    bool r = false;
+    _Bool r = false;
 
     if (zylib_error_size(error) != n)
     {
@@ -70,12 +72,12 @@ done:
     return r;
 }
 
-bool test_loop(zylib_error_t *error,
-               zylib_return_t (*push)(zylib_error_t *err, int64_t code, const char *file, size_t line,
-                                      const char *function, const zylib_box_t *box),
-               zylib_error_box_t *(*peek)(const zylib_error_t *err))
+static _Bool test_loop(zylib_error_t *error,
+                       zylib_return_t (*push)(zylib_error_t *err, int64_t code, const char *file, uint64_t line,
+                                              const char *function, const zylib_box_t *box),
+                       const zylib_error_box_t *(*peek)(const zylib_error_t *err))
 {
-    bool r = false;
+    _Bool r = false;
 
     if (!test_empty(error))
     {
@@ -85,12 +87,15 @@ bool test_loop(zylib_error_t *error,
 
     for (unsigned int i = 0; i < ITERATIONS; ++i)
     {
+        const zylib_error_box_t *error_box;
+        uint64_t size;
+        const void *data;
         char buf[SIZE] = {0};
         struct ptr_s
         {
             int64_t code;
             const char *file;
-            size_t line;
+            uint64_t line;
             const char *function;
             zylib_box_t box;
         } *const ptr = (void *)buf;
@@ -117,9 +122,9 @@ bool test_loop(zylib_error_t *error,
             goto done;
         }
 
-        const zylib_error_box_t *const error_box = peek(error);
+        error_box = peek(error);
 
-        if (error_box == nullptr)
+        if (error_box == NULL)
         {
             PRINT("peek");
             goto done;
@@ -149,8 +154,7 @@ bool test_loop(zylib_error_t *error,
             goto done;
         }
 
-        size_t size;
-        const void *const data = zylib_error_box_peek_opaque(error_box, &size);
+        data = zylib_error_box_peek_opaque(error_box, &size);
 
         if (ptr->box.size != size)
         {
@@ -181,8 +185,8 @@ done:
 int main()
 {
     int r = EXIT_FAILURE;
-    zylib_alloc_t *alloc = nullptr;
-    zylib_error_t *error = nullptr;
+    zylib_alloc_t *alloc = NULL;
+    zylib_error_t *error = NULL;
 
     if (zylib_alloc_construct(&alloc, malloc, realloc, free) != ZYLIB_OK)
     {
@@ -216,17 +220,18 @@ int main()
 
     r = EXIT_SUCCESS;
 done:
-    if (log != nullptr)
+    if (log != NULL)
     {
         zylib_log_destruct(&log);
     }
-    if (error != nullptr)
+    if (error != NULL)
     {
         zylib_error_destruct(&error);
     }
-    if (alloc != nullptr)
+    if (alloc != NULL)
     {
         zylib_alloc_destruct(&alloc);
     }
     return r;
 }
+#pragma clang diagnostic pop

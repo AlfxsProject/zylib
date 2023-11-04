@@ -22,7 +22,7 @@
 
 typedef struct zylib_box_s
 {
-    size_t size;
+    uint64_t size;
     unsigned char data[0];
 } zylib_box_t;
 

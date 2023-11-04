@@ -20,16 +20,18 @@
 #include <zylib_dequeue.h>
 #include <zylib_log.h>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wgnu-zero-variadic-macro-arguments"
 #define SIZE (512U)
 #define ITERATIONS (10U)
 
 #define PRINT(format, ...) ZYLIB_LOG_ERROR(log, format, ##__VA_ARGS__)
 
-static zylib_log_t *log = nullptr;
+static zylib_log_t *log = NULL;
 
-bool test_empty(const zylib_dequeue_t *dqe)
+static _Bool test_empty(const zylib_dequeue_t *dqe)
 {
-    bool r = false;
+    _Bool r = false;
 
     if (zylib_dequeue_size(dqe) != 0)
     {
@@ -48,9 +50,9 @@ done:
     return r;
 }
 
-bool test_size_positive_n(const zylib_dequeue_t *dqe, size_t n)
+static _Bool test_size_positive_n(const zylib_dequeue_t *dqe, size_t n)
 {
-    bool r = false;
+    _Bool r = false;
 
     if (zylib_dequeue_size(dqe) != n)
     {
@@ -69,10 +71,10 @@ done:
     return r;
 }
 
-bool test_loop(zylib_dequeue_t *dqe, zylib_return_t (*push)(zylib_dequeue_t *, const zylib_box_t *),
-               const zylib_box_t *(*peek)(const zylib_dequeue_t *))
+static _Bool test_loop(zylib_dequeue_t *dqe, zylib_return_t (*push)(zylib_dequeue_t *, const zylib_box_t *),
+                       const zylib_box_t *(*peek)(const zylib_dequeue_t *))
 {
-    bool r = false;
+    _Bool r = false;
 
     if (!test_empty(dqe))
     {
@@ -82,11 +84,12 @@ bool test_loop(zylib_dequeue_t *dqe, zylib_return_t (*push)(zylib_dequeue_t *, c
 
     for (unsigned int i = 0; i < ITERATIONS; ++i)
     {
+        const zylib_box_t *first;
         char buf[SIZE] = {0};
         zylib_box_t *const box = (zylib_box_t *)buf;
         box->size = sizeof(buf) - sizeof(zylib_box_t);
 
-        if (getrandom(box->data, box->size, 0) != box->size)
+        if (getrandom(box->data, box->size, 0) != (ssize_t)box->size)
         {
             PRINT("getrandom()");
             goto done;
@@ -104,7 +107,7 @@ bool test_loop(zylib_dequeue_t *dqe, zylib_return_t (*push)(zylib_dequeue_t *, c
             goto done;
         }
 
-        const zylib_box_t *const first = peek(dqe);
+        first = peek(dqe);
 
         if (box->size != first->size)
         {
@@ -136,8 +139,8 @@ int main()
 {
     int r = EXIT_FAILURE;
 
-    zylib_alloc_t *alloc = nullptr;
-    zylib_dequeue_t *dqe = nullptr;
+    zylib_alloc_t *alloc = NULL;
+    zylib_dequeue_t *dqe = NULL;
 
     if (zylib_alloc_construct(&alloc, malloc, realloc, free) != ZYLIB_OK)
     {
@@ -171,17 +174,18 @@ int main()
 
     r = EXIT_SUCCESS;
 done:
-    if (log != nullptr)
+    if (log != NULL)
     {
         zylib_log_destruct(&log);
     }
-    if (dqe != nullptr)
+    if (dqe != NULL)
     {
         zylib_dequeue_destruct(&dqe);
     }
-    if (alloc != nullptr)
+    if (alloc != NULL)
     {
         zylib_alloc_destruct(&alloc);
     }
     return r;
 }
+#pragma clang diagnostic pop

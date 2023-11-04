@@ -19,16 +19,18 @@
 #include <zylib_alloc.h>
 #include <zylib_log.h>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wgnu-zero-variadic-macro-arguments"
 #define BASE_SIZE (1U)
 #define ITERATIONS (10U)
 
 #define PRINT(format, ...) ZYLIB_LOG_ERROR(log, format, ##__VA_ARGS__)
 
-static zylib_log_t *log = nullptr;
+static zylib_log_t *log = NULL;
 
-zylib_return_t simulated_realloc_incremental_grow(const zylib_alloc_t *const alloc, size_t size, void **ptr)
+static zylib_return_t simulated_realloc_incremental_grow(const zylib_alloc_t *const alloc, size_t size, void **ptr)
 {
-    void *ptr_n = nullptr;
+    void *ptr_n = NULL;
     zylib_return_t r;
     if ((r = zylib_malloc(alloc, size, &ptr_n)) != ZYLIB_OK)
     {
@@ -42,12 +44,12 @@ done:
     return r;
 }
 
-bool test_loop(const zylib_alloc_t *const alloc,
-               zylib_return_t (*realloc)(const zylib_alloc_t *alloc, size_t size, void **ptr))
+static _Bool test_loop(const zylib_alloc_t *const alloc,
+                       zylib_return_t (*realloc)(const zylib_alloc_t *alloc, size_t size, void **ptr))
 {
-    bool r = false;
+    _Bool r = false;
 
-    void *ptr = nullptr;
+    void *ptr = NULL;
 
     for (unsigned int i = 0; i < ITERATIONS; ++i)
     {
@@ -60,7 +62,7 @@ bool test_loop(const zylib_alloc_t *const alloc,
 
     r = true;
 done:
-    if (ptr != nullptr)
+    if (ptr != NULL)
     {
         zylib_free(alloc, &ptr);
     }
@@ -70,7 +72,7 @@ done:
 int main()
 {
     int r = EXIT_FAILURE;
-    zylib_alloc_t *alloc = nullptr;
+    zylib_alloc_t *alloc = NULL;
 
     if (zylib_alloc_construct(&alloc, malloc, realloc, free) != ZYLIB_OK)
     {
@@ -98,13 +100,15 @@ int main()
 
     r = EXIT_SUCCESS;
 done:
-    if (log != nullptr)
+    if (log != NULL)
     {
         zylib_log_destruct(&log);
     }
-    if (alloc != nullptr)
+    if (alloc != NULL)
     {
         zylib_alloc_destruct(&alloc);
     }
     return r;
 }
+
+#pragma clang diagnostic pop
