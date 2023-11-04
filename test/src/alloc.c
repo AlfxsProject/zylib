@@ -80,7 +80,8 @@ int main()
         goto done;
     }
 
-    if (zylib_log_construct(&log, alloc, 2) != ZYLIB_OK)
+    if (zylib_log_construct(&log, alloc, "zylib-test-alloc-log.log", (zylib_log_severity_t)ZYLIB_LOG_OUTPUT_FORMAT_MAX,
+                            ZYLIB_FORMAT_PLAIN) != ZYLIB_OK)
     {
         fprintf(stderr, "zylib_log_construct()\n");
         goto done;

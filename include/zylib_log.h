@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCUnusedMacroInspection"
 #pragma clang diagnostic ignored "-Wunused-macros"
 #pragma once
 #include "zylib_alloc.h"
@@ -35,11 +36,12 @@ typedef enum zylib_log_severity_e
  * Constants
  */
 
-#define ZYLIB_LOG_MAX_MESSAGE_SEVERITY_DEFAULT (ZYLIB_ERROR)
 #define ZYLIB_LOG_MAX_MESSAGE_SEVERITY_MAX (ZYLIB_INFO)
-
-#define ZYLIB_LOG_OUTPUT_FORMAT_DEFAULT (ZYLIB_FORMAT_PLAIN)
 #define ZYLIB_LOG_OUTPUT_FORMAT_MAX (ZYLIB_FORMAT_XML)
+
+#define ZYLIB_LOG_MAX_MESSAGE_SIZE_DEFAULT (1024U)
+#define ZYLIB_LOG_TIME_FORMAT_DEFAULT ("%a %b %d %H:%M:%S %Z %Y")
+
 /* DATE FILE:LINE (FUNCTION) [SEVERITY] MESSAGE\n */
 #define ZYLIB_LOG_PLAIN_OUTPUT_FORMAT_DEFAULT ("%s %s:%zu (%s) [%s] %s\n")
 /* DATE,FILE,LINE,FUNCTION,SEVERITY,MESSAGE */
@@ -47,12 +49,6 @@ typedef enum zylib_log_severity_e
 #define ZYLIB_LOG_XML_OUTPUT_FORMAT_DEFAULT                                                                            \
     ("<message severity='%s'><date>%s</date><location file='%s' line='%zu' "                                           \
      "function='%s'/><text>%s</text></message>\n")
-
-#define ZYLIB_LOG_MAX_MESSAGE_SIZE_DEFAULT (2048U)
-#define ZYLIB_LOG_MAX_MESSAGE_SIZE_MIN (1024U)
-#define ZYLIB_LOG_MAX_MESSAGE_SIZE_MAX (65536U)
-
-#define ZYLIB_LOG_TIME_FORMAT_DEFAULT ("%a %b %d %H:%M:%S %Z %Y")
 
 /*
  * Macros
@@ -75,20 +71,9 @@ extern "C"
 #endif
 
     __attribute__((nonnull)) zylib_return_t zylib_log_construct(zylib_log_t **log, const zylib_alloc_t *alloc,
-                                                                int file_descriptor);
+                                                                const char *path, zylib_log_severity_t severity,
+                                                                zylib_format_t format);
     __attribute__((nonnull)) void zylib_log_destruct(zylib_log_t **log);
-
-    __attribute__((nonnull)) zylib_return_t zylib_log_set_max_message_size(zylib_log_t *log, size_t size);
-    __attribute__((nonnull)) size_t zylib_log_get_max_message_size(const zylib_log_t *log);
-
-    __attribute__((nonnull)) zylib_return_t zylib_log_set_max_severity(zylib_log_t *log, zylib_log_severity_t max);
-    __attribute__((nonnull)) zylib_log_severity_t zylib_log_get_max_severity(const zylib_log_t *log);
-
-    __attribute__((nonnull)) zylib_return_t zylib_log_set_output_format(zylib_log_t *log, zylib_format_t format);
-    __attribute__((nonnull)) zylib_format_t zylib_log_get_output_format(const zylib_log_t *log);
-
-    __attribute__((nonnull)) zylib_return_t zylib_log_set_time_format(zylib_log_t *log, const char *format);
-    __attribute__((nonnull)) const char *zylib_log_get_time_format(const zylib_log_t *log);
 
     /* Internal Use Only. */
     __attribute__((nonnull)) __attribute__((format(printf, 6, 7))) size_t zylib_log_write(const zylib_log_t *log,

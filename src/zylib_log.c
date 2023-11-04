@@ -17,30 +17,33 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <time.h>
-#include <unistd.h>
 
 struct zylib_log_s
 {
     const zylib_alloc_t *alloc;
-    int fd;
-    size_t max_message_size;
-    zylib_log_severity_t max_severity;
-    zylib_format_t output_format;
-    const char *time_format;
+    FILE *log_file;
+    zylib_log_severity_t log_severity;
+    zylib_format_t log_format;
 };
 
-zylib_return_t zylib_log_construct(zylib_log_t **log, const zylib_alloc_t *alloc, int file_descriptor)
+zylib_return_t zylib_log_construct(zylib_log_t **log, const zylib_alloc_t *alloc, const char *path,
+                                   zylib_log_severity_t severity, zylib_format_t format)
 {
-    zylib_return_t r = zylib_malloc(alloc, sizeof(zylib_log_t), (void **)log);
-    if (r == ZYLIB_OK)
+    zylib_return_t r = ZYLIB_ERROR_OOM;
+    FILE *file;
+    if ((file = fopen(path, "w")) == NULL)
     {
-        (*log)->alloc = alloc;
-        (*log)->fd = file_descriptor;
-        (*log)->max_message_size = ZYLIB_LOG_MAX_MESSAGE_SIZE_DEFAULT;
-        (*log)->max_severity = ZYLIB_LOG_MAX_MESSAGE_SEVERITY_DEFAULT;
-        (*log)->output_format = ZYLIB_LOG_OUTPUT_FORMAT_DEFAULT;
-        (*log)->time_format = ZYLIB_LOG_TIME_FORMAT_DEFAULT;
+        goto done;
     }
+    if ((r = zylib_malloc(alloc, sizeof(zylib_log_t), (void **)log)) != ZYLIB_OK)
+    {
+        goto done;
+    }
+    (*log)->alloc = alloc;
+    (*log)->log_file = file;
+    (*log)->log_severity = severity;
+    (*log)->log_format = format;
+done:
     return r;
 }
 
@@ -52,66 +55,6 @@ void zylib_log_destruct(zylib_log_t **log)
     }
 }
 
-zylib_return_t zylib_log_set_max_message_size(zylib_log_t *log, size_t size)
-{
-    if (size >= ZYLIB_LOG_MAX_MESSAGE_SIZE_MIN && size <= ZYLIB_LOG_MAX_MESSAGE_SIZE_MAX)
-    {
-        log->max_message_size = size;
-        return ZYLIB_OK;
-    }
-    return ZYLIB_ERROR_INPUT_VALUE;
-}
-
-size_t zylib_log_get_max_message_size(const zylib_log_t *log)
-{
-    size_t message_size = log->max_message_size;
-    return message_size;
-}
-
-zylib_return_t zylib_log_set_max_severity(zylib_log_t *log, zylib_log_severity_t max)
-{
-    if (max <= ZYLIB_LOG_MAX_MESSAGE_SEVERITY_MAX)
-    {
-        log->max_severity = max;
-        return ZYLIB_OK;
-    }
-    return ZYLIB_ERROR_INPUT_VALUE;
-}
-
-zylib_log_severity_t zylib_log_get_max_severity(const zylib_log_t *log)
-{
-    zylib_log_severity_t max_message_type = log->max_severity;
-    return max_message_type;
-}
-
-zylib_return_t zylib_log_set_output_format(zylib_log_t *log, zylib_format_t format)
-{
-    if (format <= ZYLIB_LOG_OUTPUT_FORMAT_MAX)
-    {
-        log->output_format = format;
-        return ZYLIB_OK;
-    }
-    return ZYLIB_ERROR_INPUT_VALUE;
-}
-
-zylib_format_t zylib_log_get_output_format(const zylib_log_t *log)
-{
-    zylib_format_t output_format = log->output_format;
-    return output_format;
-}
-
-zylib_return_t zylib_log_set_time_format(zylib_log_t *log, const char *format)
-{
-    log->time_format = format;
-    return ZYLIB_OK;
-}
-
-const char *zylib_log_get_time_format(const zylib_log_t *log)
-{
-    const char *const time_format = log->time_format;
-    return time_format;
-}
-
 /*
  * Print message
  * TIME, FILE, LINE, FUNCTION, SEVERITY, MESSAGE
@@ -119,17 +62,12 @@ const char *zylib_log_get_time_format(const zylib_log_t *log)
 size_t zylib_log_write(const zylib_log_t *log, zylib_log_severity_t severity, const char *file, size_t line,
                        const char *function, const char *format, ...)
 {
-    const zylib_log_severity_t max_severity = log->max_severity;
-    const zylib_format_t output_format = log->output_format;
-    const char *const time_format = log->time_format;
-    const size_t max_message_size = log->max_message_size;
-
-    if (severity <= max_severity)
+    if (severity <= log->log_severity)
     {
         char *user_message = NULL, *log_message = NULL;
         size_t r = 0;
-        if (zylib_malloc(log->alloc, max_message_size, (void **)&user_message) == ZYLIB_OK &&
-            zylib_malloc(log->alloc, max_message_size, (void **)&log_message) == ZYLIB_OK)
+        if (zylib_malloc(log->alloc, ZYLIB_LOG_MAX_MESSAGE_SIZE_DEFAULT, (void **)&user_message) == ZYLIB_OK &&
+            zylib_malloc(log->alloc, ZYLIB_LOG_MAX_MESSAGE_SIZE_DEFAULT, (void **)&log_message) == ZYLIB_OK)
         {
             static const char *error_string = "";
             char date_buf[120] = {0};
@@ -139,7 +77,7 @@ size_t zylib_log_write(const zylib_log_t *log, zylib_log_severity_t severity, co
             time_t now;
 
             va_start(args, format);
-            vsnprintf(user_message, max_message_size, format, args);
+            vsnprintf(user_message, ZYLIB_LOG_MAX_MESSAGE_SIZE_DEFAULT, format, args);
             va_end(args);
 
             switch (severity)
@@ -167,26 +105,29 @@ size_t zylib_log_write(const zylib_log_t *log, zylib_log_severity_t severity, co
                 goto write;
             }
 
-            strftime(date_buf, sizeof(date_buf), time_format, &tm);
+            strftime(date_buf, sizeof(date_buf), ZYLIB_LOG_TIME_FORMAT_DEFAULT, &tm);
 
         write:
-            switch (output_format)
+            switch (log->log_format)
             {
             case ZYLIB_FORMAT_CSV:
-                offset = (size_t)snprintf(log_message, max_message_size, ZYLIB_LOG_CSV_OUTPUT_FORMAT_DEFAULT, date_buf,
-                                          file, line, function, error_string, user_message);
+                offset = (size_t)snprintf(log_message, ZYLIB_LOG_MAX_MESSAGE_SIZE_DEFAULT,
+                                          ZYLIB_LOG_CSV_OUTPUT_FORMAT_DEFAULT, date_buf, file, line, function,
+                                          error_string, user_message);
                 break;
             case ZYLIB_FORMAT_XML:
-                offset = (size_t)snprintf(log_message, max_message_size, ZYLIB_LOG_XML_OUTPUT_FORMAT_DEFAULT,
-                                          error_string, date_buf, file, line, function, user_message);
+                offset = (size_t)snprintf(log_message, ZYLIB_LOG_MAX_MESSAGE_SIZE_DEFAULT,
+                                          ZYLIB_LOG_XML_OUTPUT_FORMAT_DEFAULT, error_string, date_buf, file, line,
+                                          function, user_message);
                 break;
             case ZYLIB_FORMAT_PLAIN:
-                offset = (size_t)snprintf(log_message, max_message_size, ZYLIB_LOG_PLAIN_OUTPUT_FORMAT_DEFAULT,
-                                          date_buf, file, line, function, error_string, user_message);
+                offset = (size_t)snprintf(log_message, ZYLIB_LOG_MAX_MESSAGE_SIZE_DEFAULT,
+                                          ZYLIB_LOG_PLAIN_OUTPUT_FORMAT_DEFAULT, date_buf, file, line, function,
+                                          error_string, user_message);
                 break;
             }
 
-            r = (size_t)write(log->fd, log_message, offset);
+            r = (size_t)fwrite(log_message, 1, offset, log->log_file);
         }
         if (user_message != NULL)
         {
