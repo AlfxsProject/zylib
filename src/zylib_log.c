@@ -26,34 +26,41 @@ struct zylib_log_s
     zylib_log_format_t log_format;
 };
 
-zylib_return_t zylib_log_construct(zylib_log_t **log, const zylib_allocator_t *alloc, const char *path,
-                                   zylib_log_severity_t severity, zylib_log_format_t format)
+_Bool zylib_log_construct(zylib_log_t **log, const zylib_allocator_t *alloc, const char *path,
+                          zylib_log_severity_t severity, zylib_log_format_t format)
 {
-    zylib_return_t r;
-    FILE *file;
+    _Bool r = 0;
+    FILE *file = NULL;
     if (severity > ZYLIB_LOG_SEVERITY_MAX)
     {
-        r = ZYLIB_ERROR_INPUT_VALUE;
-        goto done;
+        // ZYLIB_ERROR_INPUT_VALUE;
+        goto error;
     }
     if (format > ZYLIB_LOG_OUTPUT_FORMAT_MAX)
     {
-        r = ZYLIB_ERROR_INPUT_VALUE;
-        goto done;
+        // ZYLIB_ERROR_INPUT_VALUE;
+        goto error;
     }
     if ((file = fopen(path, "w")) == NULL)
     {
-        r = ZYLIB_ERROR_OOM;
-        goto done;
+        // ZYLIB_ERROR_OOM;
+        goto error;
     }
-    if ((r = zylib_allocator_malloc(alloc, sizeof(zylib_log_t), (void **)log)) != ZYLIB_OK)
+    r = zylib_allocator_malloc(alloc, sizeof(zylib_log_t), (void **)log);
+    if (r)
     {
-        goto done;
+        (*log)->alloc = alloc;
+        (*log)->log_file = file;
+        (*log)->log_severity = severity;
+        (*log)->log_format = format;
     }
-    (*log)->alloc = alloc;
-    (*log)->log_file = file;
-    (*log)->log_severity = severity;
-    (*log)->log_format = format;
+    goto done;
+error:
+    if (file != NULL)
+    {
+        fclose(file);
+        file = NULL;
+    }
 done:
     return r;
 }
@@ -78,9 +85,8 @@ size_t zylib_log_write(const zylib_log_t *log, zylib_log_severity_t severity, co
     {
         char *user_message = NULL, *log_message = NULL;
         size_t r = 0;
-        if (zylib_allocator_malloc(log->alloc, ZYLIB_LOG_MAX_MESSAGE_SIZE_DEFAULT, (void **)&user_message) ==
-                ZYLIB_OK &&
-            zylib_allocator_malloc(log->alloc, ZYLIB_LOG_MAX_MESSAGE_SIZE_DEFAULT, (void **)&log_message) == ZYLIB_OK)
+        if (zylib_allocator_malloc(log->alloc, ZYLIB_LOG_MAX_MESSAGE_SIZE_DEFAULT, (void **)&user_message) &&
+            zylib_allocator_malloc(log->alloc, ZYLIB_LOG_MAX_MESSAGE_SIZE_DEFAULT, (void **)&log_message))
         {
             static const char *error_string = "";
             char date_buf[120] = {0};

@@ -81,8 +81,8 @@ done:
 }
 
 static _Bool test_loop(zylib_error_t *error,
-                       zylib_return_t (*push)(zylib_error_t *err, int64_t code, const char *file, uint64_t line,
-                                              const char *function, const zylib_box_t *box),
+                       _Bool (*push)(zylib_error_t *err, int64_t code, const char *file, uint64_t line,
+                                     const char *function, const zylib_box_t *box),
                        const zylib_error_box_t *(*peek)(const zylib_error_t *err))
 {
     _Bool r = false;
@@ -122,7 +122,7 @@ static _Bool test_loop(zylib_error_t *error,
         ptr->file = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z";
         ptr->function = "a b c d e f g h i j k l m n o p q r s t u v w x y z";
 
-        if (push(error, ptr->code, ptr->file, ptr->line, ptr->function, &ptr->box) != ZYLIB_OK)
+        if (!push(error, ptr->code, ptr->file, ptr->line, ptr->function, &ptr->box))
         {
             PRINT_ERROR("push(): fail");
             goto done;
@@ -220,19 +220,19 @@ int main()
     zylib_allocator_t *alloc = NULL;
     zylib_error_t *error = NULL;
 
-    if (zylib_allocator_construct(&alloc, malloc, realloc, free) != ZYLIB_OK)
+    if (!zylib_allocator_construct(&alloc, malloc, realloc, free))
     {
         fprintf(stderr, "zylib_allocator_construct()\n");
         goto done;
     }
 
-    if (zylib_log_construct(&log, alloc, "zylib-test-error-log.log", ZYLIB_INFO, ZYLIB_LOG_FORMAT_PLAIN) != ZYLIB_OK)
+    if (!zylib_log_construct(&log, alloc, "zylib-test-error-log.log", ZYLIB_INFO, ZYLIB_LOG_FORMAT_PLAIN))
     {
         fprintf(stderr, "zylib_log_construct()\n");
         goto done;
     }
 
-    if (zylib_error_construct(&error, alloc) != ZYLIB_OK)
+    if (!zylib_error_construct(&error, alloc))
     {
         PRINT_ERROR("zylib_error_construct(): fail");
         goto done;

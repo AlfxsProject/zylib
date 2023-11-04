@@ -71,7 +71,7 @@ done:
     return r;
 }
 
-static _Bool test_loop(zylib_dequeue_t *dqe, zylib_return_t (*push)(zylib_dequeue_t *, const zylib_box_t *),
+static _Bool test_loop(zylib_dequeue_t *dqe, _Bool (*push)(zylib_dequeue_t *, const zylib_box_t *),
                        const zylib_box_t *(*peek)(const zylib_dequeue_t *))
 {
     _Bool r = false;
@@ -95,7 +95,7 @@ static _Bool test_loop(zylib_dequeue_t *dqe, zylib_return_t (*push)(zylib_dequeu
             goto done;
         }
 
-        if (push(dqe, box) != ZYLIB_OK)
+        if (!push(dqe, box))
         {
             PRINT_ERROR("push()");
             goto done;
@@ -142,19 +142,19 @@ int main()
     zylib_allocator_t *alloc = NULL;
     zylib_dequeue_t *dqe = NULL;
 
-    if (zylib_allocator_construct(&alloc, malloc, realloc, free) != ZYLIB_OK)
+    if (!zylib_allocator_construct(&alloc, malloc, realloc, free))
     {
         fprintf(stderr, "zylib_allocator_construct()\n");
         goto done;
     }
 
-    if (zylib_log_construct(&log, alloc, "zylib-test-dequeue-log.log", ZYLIB_INFO, ZYLIB_LOG_FORMAT_PLAIN) != ZYLIB_OK)
+    if (!zylib_log_construct(&log, alloc, "zylib-test-dequeue-log.log", ZYLIB_INFO, ZYLIB_LOG_FORMAT_PLAIN))
     {
         fprintf(stderr, "zylib_log_construct()\n");
         goto done;
     }
 
-    if (zylib_dequeue_construct(&dqe, alloc) != ZYLIB_OK)
+    if (!zylib_dequeue_construct(&dqe, alloc))
     {
         PRINT_ERROR("zylib_dequeue_construct()");
         goto done;

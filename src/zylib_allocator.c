@@ -41,11 +41,11 @@ _Bool zylib_allocator_construct(zylib_allocator_t **allocator, zylib_allocator_m
             (*allocator)->malloc = malloc;
             (*allocator)->realloc = realloc;
             (*allocator)->free = free;
-            return ZYLIB_OK;
+            return 1; // ZYLIB_OK
         }
-        return ZYLIB_ERROR_OOM;
+        return 0; // ZYLIB_ERROR_OOM;
     }
-    return ZYLIB_ERROR_INPUT_VALUE;
+    return 0; // ZYLIB_ERROR_INPUT_VALUE;
 }
 
 void zylib_allocator_destruct(zylib_allocator_t **allocator)
@@ -65,11 +65,11 @@ _Bool zylib_allocator_malloc(const zylib_allocator_t *allocator, size_t size, vo
         *p_void = allocator->malloc(size);
         if (*p_void != NULL)
         {
-            return ZYLIB_OK;
+            return 1; // ZYLIB_OK;
         }
-        return ZYLIB_ERROR_OOM;
+        return 0; // ZYLIB_ERROR_OOM;
     }
-    return ZYLIB_ERROR_INPUT_VALUE;
+    return 0; // ZYLIB_ERROR_INPUT_VALUE;
 }
 
 _Bool zylib_allocator_realloc(const zylib_allocator_t *allocator, size_t size, void **p_void)
@@ -80,11 +80,11 @@ _Bool zylib_allocator_realloc(const zylib_allocator_t *allocator, size_t size, v
         if (x_ptr != NULL)
         {
             *p_void = x_ptr;
-            return ZYLIB_OK;
+            return 1; // ZYLIB_OK;
         }
-        return ZYLIB_ERROR_OOM;
+        return 0; // ZYLIB_ERROR_OOM;
     }
-    return ZYLIB_ERROR_INPUT_VALUE;
+    return 0; // ZYLIB_ERROR_INPUT_VALUE;
 }
 
 void zylib_allocator_free(const zylib_allocator_t *allocator, void **p_void)

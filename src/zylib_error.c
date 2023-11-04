@@ -40,51 +40,50 @@ struct zylib_error_box_s
  * Functions
  */
 
-static zylib_return_t zylib_error_push(zylib_error_t *err, int64_t code, const char *file, uint64_t line,
-                                       const char *function, const zylib_box_t *box,
-                                       zylib_return_t (*push)(zylib_dequeue_t *dqe, const zylib_box_t *box))
+static _Bool zylib_error_push(zylib_error_t *err, int64_t code, const char *file, uint64_t line, const char *function,
+                              const zylib_box_t *box, _Bool (*push)(zylib_dequeue_t *dqe, const zylib_box_t *box))
 {
-    struct buf_s
+    _Bool r = 0; // ZYLIB_ERROR_INPUT_VALUE;
+    if (err != NULL && file != NULL && function != NULL)
     {
-        uint64_t size;
-        zylib_error_box_t bx;
-    } *buf;
+        struct buf_s
+        {
+            uint64_t size;
+            zylib_error_box_t bx;
+        } *buf;
 
-    const uint64_t box_size = box == NULL ? 0 : box->size;
-    const uint64_t total_size = sizeof(struct buf_s) + sizeof(zylib_box_t) + box_size;
+        const uint64_t box_size = box == NULL ? 0 : box->size;
+        const uint64_t total_size = sizeof(struct buf_s) + sizeof(zylib_box_t) + box_size;
 
-    zylib_return_t r = zylib_allocator_malloc(err->alloc, total_size, (void **)&buf);
-    if (r == ZYLIB_OK)
-    {
-        buf->size = sizeof(zylib_error_box_t) + sizeof(*box) + box_size;
-        buf->bx.code = code;
-        buf->bx.file = file;
-        buf->bx.line = line;
-        buf->bx.function = function;
-        buf->bx.box.size = box_size;
-        memcpy(buf->bx.box.data, box->data, box_size);
-        r = push(err->dequeue, (const zylib_box_t *)buf);
-        zylib_allocator_free(err->alloc, (void **)&buf);
+        r = zylib_allocator_malloc(err->alloc, total_size, (void **)&buf);
+        if (r) // ZYLIB_OK
+        {
+            buf->size = sizeof(zylib_error_box_t) + sizeof(*box) + box_size;
+            buf->bx.code = code;
+            buf->bx.file = file;
+            buf->bx.line = line;
+            buf->bx.function = function;
+            buf->bx.box.size = box_size;
+            memcpy(buf->bx.box.data, box->data, box_size);
+            r = push(err->dequeue, (const zylib_box_t *)buf);
+            zylib_allocator_free(err->alloc, (void **)&buf);
+        }
     }
     return r;
 }
 
-zylib_return_t zylib_error_construct(zylib_error_t **err, const zylib_allocator_t *alloc)
+_Bool zylib_error_construct(zylib_error_t **err, const zylib_allocator_t *alloc)
 {
-    zylib_return_t r = zylib_allocator_malloc(alloc, sizeof(zylib_error_t), (void **)err);
-
-    if (r == ZYLIB_OK)
+    _Bool r = 0; // ZYLIB_ERROR_INPUT_VALUE;
+    if (err != NULL && alloc != NULL)
     {
-        zylib_dequeue_t *dequeue;
-        r = zylib_dequeue_construct(&dequeue, alloc);
-        if (r == ZYLIB_OK)
+        zylib_dequeue_t *dequeue = NULL;
+        r = zylib_allocator_malloc(alloc, sizeof(zylib_error_t), (void **)err) &&
+            zylib_dequeue_construct(&dequeue, alloc);
+        if (r) // ZYLIB_OK
         {
             (*err)->alloc = alloc;
             (*err)->dequeue = dequeue;
-        }
-        else
-        {
-            zylib_allocator_free(alloc, (void **)err);
         }
     }
     return r;
@@ -92,7 +91,7 @@ zylib_return_t zylib_error_construct(zylib_error_t **err, const zylib_allocator_
 
 void zylib_error_destruct(zylib_error_t **err)
 {
-    if (*err != NULL)
+    if (err != NULL && *err != NULL)
     {
         zylib_dequeue_destruct(&(*err)->dequeue);
         zylib_allocator_free((*err)->alloc, (void **)err);
@@ -104,14 +103,14 @@ void zylib_error_clear(zylib_error_t *err)
     zylib_dequeue_clear(err->dequeue);
 }
 
-zylib_return_t zylib_error_push_first(zylib_error_t *err, int64_t code, const char *file, uint64_t line,
-                                      const char *function, const zylib_box_t *box)
+_Bool zylib_error_push_first(zylib_error_t *err, int64_t code, const char *file, uint64_t line, const char *function,
+                             const zylib_box_t *box)
 {
     return zylib_error_push(err, code, file, line, function, box, zylib_dequeue_push_first);
 }
 
-zylib_return_t zylib_error_push_last(zylib_error_t *err, int64_t code, const char *file, uint64_t line,
-                                     const char *function, const zylib_box_t *box)
+_Bool zylib_error_push_last(zylib_error_t *err, int64_t code, const char *file, uint64_t line, const char *function,
+                            const zylib_box_t *box)
 {
     return zylib_error_push(err, code, file, line, function, box, zylib_dequeue_push_last);
 }

@@ -28,11 +28,11 @@
 
 static zylib_log_t *log = NULL;
 
-static zylib_return_t simulated_realloc_incremental_grow(const zylib_allocator_t *const alloc, size_t size, void **ptr)
+static _Bool simulated_realloc_incremental_grow(const zylib_allocator_t *const alloc, size_t size, void **ptr)
 {
     void *ptr_n = NULL;
-    zylib_return_t r;
-    if ((r = zylib_allocator_malloc(alloc, size, &ptr_n)) != ZYLIB_OK)
+    _Bool r = 0;
+    if (!zylib_allocator_malloc(alloc, size, &ptr_n))
     {
         PRINT_ERROR("zylib_allocator_malloc");
         goto done;
@@ -40,12 +40,13 @@ static zylib_return_t simulated_realloc_incremental_grow(const zylib_allocator_t
     memcpy(ptr_n, *ptr, size - 1);
     zylib_allocator_free(alloc, ptr);
     *ptr = ptr_n;
+    r = 1;
 done:
     return r;
 }
 
 static _Bool test_loop(const zylib_allocator_t *const alloc,
-                       zylib_return_t (*realloc)(const zylib_allocator_t *alloc, size_t size, void **ptr))
+                       _Bool (*realloc)(const zylib_allocator_t *alloc, size_t size, void **ptr))
 {
     _Bool r = false;
 
@@ -53,7 +54,7 @@ static _Bool test_loop(const zylib_allocator_t *const alloc,
 
     for (unsigned int i = 0; i < ITERATIONS; ++i)
     {
-        if (realloc(alloc, BASE_SIZE + i, &ptr) != ZYLIB_OK)
+        if (!realloc(alloc, BASE_SIZE + i, &ptr))
         {
             PRINT_ERROR("realloc(%u)", BASE_SIZE + i);
             goto done;
@@ -74,14 +75,13 @@ int main()
     int r = EXIT_FAILURE;
     zylib_allocator_t *alloc = NULL;
 
-    if (zylib_allocator_construct(&alloc, malloc, realloc, free) != ZYLIB_OK)
+    if (!zylib_allocator_construct(&alloc, malloc, realloc, free))
     {
         fprintf(stderr, "zylib_allocator_construct()\n");
         goto done;
     }
 
-    if (zylib_log_construct(&log, alloc, "zylib-test-allocator-log.log", ZYLIB_INFO, ZYLIB_LOG_FORMAT_PLAIN) !=
-        ZYLIB_OK)
+    if (!zylib_log_construct(&log, alloc, "zylib-test-allocator-log.log", ZYLIB_INFO, ZYLIB_LOG_FORMAT_PLAIN))
     {
         fprintf(stderr, "zylib_log_construct()\n");
         goto done;

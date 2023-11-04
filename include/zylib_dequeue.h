@@ -20,11 +20,11 @@ typedef struct zylib_dequeue_s zylib_dequeue_t;
 
 ZYLIB_BEGIN_DECLS
 
-zylib_return_t zylib_dequeue_construct(zylib_dequeue_t **p_dequeue, const zylib_allocator_t *allocator);
+_Bool zylib_dequeue_construct(zylib_dequeue_t **p_dequeue, const zylib_allocator_t *allocator);
 void zylib_dequeue_destruct(zylib_dequeue_t **p_dequeue);
 void zylib_dequeue_clear(zylib_dequeue_t *dequeue);
-zylib_return_t zylib_dequeue_push_first(zylib_dequeue_t *dequeue, const zylib_box_t *box);
-zylib_return_t zylib_dequeue_push_last(zylib_dequeue_t *dequeue, const zylib_box_t *box);
+_Bool zylib_dequeue_push_first(zylib_dequeue_t *dequeue, const zylib_box_t *box);
+_Bool zylib_dequeue_push_last(zylib_dequeue_t *dequeue, const zylib_box_t *box);
 void zylib_dequeue_discard_first(zylib_dequeue_t *dequeue);
 void zylib_dequeue_discard_last(zylib_dequeue_t *dequeue);
 const zylib_box_t *zylib_dequeue_peek_first(const zylib_dequeue_t *dequeue);

@@ -29,12 +29,12 @@ typedef struct zylib_error_s zylib_error_t;
 
 ZYLIB_BEGIN_DECLS
 
-zylib_return_t zylib_error_construct(zylib_error_t **err, const zylib_allocator_t *alloc);
+_Bool zylib_error_construct(zylib_error_t **err, const zylib_allocator_t *alloc);
 void zylib_error_destruct(zylib_error_t **err);
 void zylib_error_clear(zylib_error_t *err);
-zylib_return_t zylib_error_push_first(zylib_error_t *err, int64_t code, const char *file, uint64_t line,
+_Bool zylib_error_push_first(zylib_error_t *err, int64_t code, const char *file, uint64_t line,
                                       const char *function, const zylib_box_t *box);
-zylib_return_t zylib_error_push_last(zylib_error_t *err, int64_t code, const char *file, uint64_t line,
+_Bool zylib_error_push_last(zylib_error_t *err, int64_t code, const char *file, uint64_t line,
                                      const char *function, const zylib_box_t *box);
 void zylib_error_discard_first(zylib_error_t *err);
 void zylib_error_discard_last(zylib_error_t *err);
