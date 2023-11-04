@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 #include "zylib_log.h"
-
 #include <stdarg.h>
 #include <stdio.h>
 #include <time.h>

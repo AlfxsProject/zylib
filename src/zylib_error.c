@@ -15,7 +15,6 @@
  */
 #include "zylib_error.h"
 #include "zylib_dequeue.h"
-
 #include <string.h>
 
 /*
