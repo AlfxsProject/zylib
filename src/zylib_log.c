@@ -26,24 +26,16 @@ struct zylib_log_s
     zylib_log_format_t log_format;
 };
 
-_Bool zylib_log_construct(zylib_log_t **log, const zylib_allocator_t *alloc, const char *path,
-                          zylib_log_severity_t severity, zylib_log_format_t format)
+_Bool zylib_log_construct(zylib_log_t **log, const zylib_allocator_t *alloc, FILE *file, zylib_log_severity_t severity,
+                          zylib_log_format_t format)
 {
     _Bool r = 0;
-    FILE *file = NULL;
     if (severity > ZYLIB_LOG_SEVERITY_MAX)
     {
-        // ZYLIB_ERROR_INPUT_VALUE;
         goto error;
     }
     if (format > ZYLIB_LOG_OUTPUT_FORMAT_MAX)
     {
-        // ZYLIB_ERROR_INPUT_VALUE;
-        goto error;
-    }
-    if ((file = fopen(path, "w")) == NULL)
-    {
-        // ZYLIB_ERROR_OOM;
         goto error;
     }
     r = zylib_allocator_malloc(alloc, sizeof(zylib_log_t), (void **)log);

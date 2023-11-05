@@ -15,6 +15,7 @@
  */
 #pragma once
 #include "zylib_allocator.h"
+#include <stdio.h>
 
 /*
  * Types
@@ -72,8 +73,8 @@ typedef enum zylib_log_format_e
 
 ZYLIB_BEGIN_DECLS
 
-_Bool zylib_log_construct(zylib_log_t **log, const zylib_allocator_t *alloc, const char *path,
-                          zylib_log_severity_t severity, zylib_log_format_t format);
+_Bool zylib_log_construct(zylib_log_t **log, const zylib_allocator_t *alloc, FILE *file, zylib_log_severity_t severity,
+                          zylib_log_format_t format);
 void zylib_log_destruct(zylib_log_t **log);
 
 /* Internal Use Only. */

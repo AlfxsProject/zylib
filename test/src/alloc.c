@@ -36,7 +36,7 @@ int main()
         goto error;
     }
 
-    if (!zylib_log_construct(&log, allocator, "zylib-test-allocator-log.log", ZYLIB_INFO, ZYLIB_LOG_FORMAT_PLAIN))
+    if (!zylib_log_construct(&log, allocator, stderr, ZYLIB_INFO, ZYLIB_LOG_FORMAT_PLAIN))
     {
         fprintf(stderr, "zylib_log_construct() failed\n");
         goto error;
