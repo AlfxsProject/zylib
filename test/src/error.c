@@ -41,6 +41,15 @@ static inline _Bool test_push_peek_discard_first();
 
 static inline _Bool test_push_peek_discard_last();
 
+static inline _Bool test_loop_push_peek_clear(_Bool (*push)(zylib_error_t *error, int64_t code, const char *file,
+                                                            uint64_t line, const char *function, uint64_t size,
+                                                            const void *p_void),
+                                              const zylib_error_box_t *(*peek)(const zylib_error_t *error));
+
+static inline _Bool test_loop_push_peek_clear_first();
+
+static inline _Bool test_loop_push_peek_clear_last();
+
 int main()
 {
     int r = EXIT_FAILURE;
@@ -82,6 +91,24 @@ int main()
     if (!test_push_peek_discard_last())
     {
         PRINT_ERROR("test_push_peek_discard_last() failed");
+        goto error;
+    }
+
+    if (!test_loop_push_peek_clear_first())
+    {
+        PRINT_ERROR("test_loop_push_peek_clear_first() failed");
+        goto error;
+    }
+
+    if (!test_loop_push_peek_clear_last())
+    {
+        PRINT_ERROR("test_loop_push_peek_clear_last() failed");
+        goto error;
+    }
+
+    if (!zylib_error_is_empty(error))
+    {
+        PRINT_ERROR("zylib_dequeue_is_empty() failed");
         goto error;
     }
 
@@ -215,4 +242,42 @@ _Bool test_push_peek_discard_first()
 _Bool test_push_peek_discard_last()
 {
     return test_push_peek_discard(zylib_error_push_last, zylib_error_peek_last, zylib_error_discard_last);
+}
+
+_Bool test_loop_push_peek_clear(_Bool (*push)(zylib_error_t *error, int64_t code, const char *file, uint64_t line,
+                                              const char *function, uint64_t size, const void *p_void),
+                                const zylib_error_box_t *(*peek)(const zylib_error_t *error))
+{
+    _Bool r = 0;
+
+    for (uint8_t i = 0; i < 100; ++i)
+    {
+        if (!test_push_peek(i, push, peek))
+        {
+            PRINT_ERROR("test_push_peek() failed");
+            goto error;
+        }
+    }
+
+    zylib_error_clear(error);
+
+    if (!zylib_error_is_empty(error))
+    {
+        PRINT_ERROR("zylib_error_is_empty() failed");
+        goto error;
+    }
+
+    r = 1;
+error:
+    return r;
+}
+
+_Bool test_loop_push_peek_clear_first()
+{
+    return test_loop_push_peek_clear(zylib_error_push_first, zylib_error_peek_first);
+}
+
+_Bool test_loop_push_peek_clear_last()
+{
+    return test_loop_push_peek_clear(zylib_error_push_first, zylib_error_peek_first);
 }
