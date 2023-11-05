@@ -21,11 +21,11 @@ typedef struct zylib_box_s zylib_box_t;
 
 ZYLIB_BEGIN_DECLS
 
-_Bool zylib_box_construct(zylib_box_t **p_box, const zylib_allocator_t *allocator, uint64_t size, const void *p_void);
-_Bool zylib_box_append(zylib_box_t **dest, const zylib_allocator_t *allocator, uint64_t size, const void *p_void);
-_Bool zylib_box_split_latter(const zylib_box_t *box, uint64_t index, uint64_t *p_size, const void **p_void);
-void zylib_box_destruct(zylib_box_t **p_box, const zylib_allocator_t *allocator);
-uint64_t zylib_box_peek_size(const zylib_box_t *box);
-const void *zylib_box_peek_data(const zylib_box_t *box);
+_Bool zylib_box_construct(zylib_box_t **p_box, const zylib_allocator_t *allocator, uint64_t size, const void *p_data);
+void zylib_box_destruct(zylib_box_t **p_box);
+_Bool zylib_box_append(zylib_box_t **dest, uint64_t size, const void *p_data);
+_Bool zylib_box_split_latter(const zylib_box_t *box, uint64_t index, uint64_t *p_size, const void **p_data);
+_Bool zylib_box_peek_size(const zylib_box_t *box, uint64_t *p_size);
+_Bool zylib_box_peek_data(const zylib_box_t *box, const void **p_data);
 
 ZYLIB_END_DECLS

@@ -41,12 +41,14 @@ struct zylib_error_box_s
  */
 
 static _Bool zylib_error_push(zylib_error_t *error, int64_t code, const char *file, uint64_t line, const char *function,
-                              size_t size, const void *p_void,
-                              _Bool (*push)(zylib_dequeue_t *dequeue, size_t size, const void *p_void))
+                              size_t size, const void *data, _Bool (*push)(zylib_dequeue_t *, size_t, const void *))
 {
     _Bool r = 0;
     zylib_box_t *box = NULL;
     const zylib_error_box_t error_box = {.size = size, .code = code, .file = file, .line = line, .function = function};
+
+    uint64_t i;
+    const void *s;
 
     if (error == NULL || file == NULL || function == NULL)
     {
@@ -59,16 +61,28 @@ static _Bool zylib_error_push(zylib_error_t *error, int64_t code, const char *fi
         goto error;
     }
 
-    if (size > 0 && p_void != NULL)
+    if (size > 0 && data != NULL)
     {
-        r = zylib_box_append(&box, error->allocator, size, p_void);
+        r = zylib_box_append(&box, size, data);
         if (!r)
         {
             goto error;
         }
     }
 
-    r = push(error->dequeue, zylib_box_peek_size(box), zylib_box_peek_data(box));
+    r = zylib_box_peek_size(box, &i);
+    if (!r)
+    {
+        goto error;
+    }
+
+    r = zylib_box_peek_data(box, &s);
+    if (!r)
+    {
+        goto error;
+    }
+
+    r = push(error->dequeue, i, s);
     if (!r)
     {
         goto error;
@@ -77,7 +91,7 @@ static _Bool zylib_error_push(zylib_error_t *error, int64_t code, const char *fi
 error:
     if (box != NULL)
     {
-        zylib_box_destruct(&box, error->allocator);
+        zylib_box_destruct(&box);
     }
     return r;
 }
@@ -210,5 +224,5 @@ const void *zylib_error_box_peek_auxiliary_data(const zylib_error_box_t *error_b
         *p_size = error_box->size;
     }
 
-    return (const uint8_t *)error_box + sizeof(zylib_error_box_t);
+    return &((const uint8_t *)error_box)[sizeof(zylib_error_box_t)];
 }
