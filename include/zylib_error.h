@@ -15,6 +15,7 @@
  */
 #pragma once
 #include "zylib_allocator.h"
+#include <stdint.h>
 
 /*
  * Types
@@ -29,23 +30,23 @@ typedef struct zylib_error_s zylib_error_t;
 
 ZYLIB_BEGIN_DECLS
 
-_Bool zylib_error_construct(zylib_error_t **err, const zylib_allocator_t *alloc);
-void zylib_error_destruct(zylib_error_t **err);
-void zylib_error_clear(zylib_error_t *err);
-_Bool zylib_error_push_first(zylib_error_t *err, int64_t code, const char *file, uint64_t line,
-                                      const char *function, const zylib_box_t *box);
-_Bool zylib_error_push_last(zylib_error_t *err, int64_t code, const char *file, uint64_t line,
-                                     const char *function, const zylib_box_t *box);
-void zylib_error_discard_first(zylib_error_t *err);
-void zylib_error_discard_last(zylib_error_t *err);
-const zylib_error_box_t *zylib_error_peek_first(const zylib_error_t *err);
-const zylib_error_box_t *zylib_error_peek_last(const zylib_error_t *err);
-uint64_t zylib_error_size(const zylib_error_t *err);
-_Bool zylib_error_is_empty(const zylib_error_t *err);
-int64_t zylib_error_box_peek_code(const zylib_error_box_t *bx);
-const char *zylib_error_box_peek_file(const zylib_error_box_t *bx);
-uint64_t zylib_error_box_peek_line_number(const zylib_error_box_t *bx);
-const char *zylib_error_box_peek_function(const zylib_error_box_t *bx);
-__attribute__((nonnull(1))) const void *zylib_error_box_peek_opaque(const zylib_error_box_t *bx, uint64_t *size);
+_Bool zylib_error_construct(zylib_error_t **p_error, const zylib_allocator_t *allocator);
+void zylib_error_destruct(zylib_error_t **p_error);
+void zylib_error_clear(zylib_error_t *error);
+_Bool zylib_error_push_first(zylib_error_t *error, int64_t code, const char *file, uint64_t line, const char *function,
+                             uint64_t size, const void *p_void);
+_Bool zylib_error_push_last(zylib_error_t *error, int64_t code, const char *file, uint64_t line, const char *function,
+                            uint64_t size, const void *p_void);
+void zylib_error_discard_first(zylib_error_t *error);
+void zylib_error_discard_last(zylib_error_t *error);
+const zylib_error_box_t *zylib_error_peek_first(const zylib_error_t *error);
+const zylib_error_box_t *zylib_error_peek_last(const zylib_error_t *error);
+uint64_t zylib_error_size(const zylib_error_t *error);
+_Bool zylib_error_is_empty(const zylib_error_t *error);
+int64_t zylib_error_box_peek_code(const zylib_error_box_t *error_box);
+const char *zylib_error_box_peek_file(const zylib_error_box_t *error_box);
+uint64_t zylib_error_box_peek_line_number(const zylib_error_box_t *error_box);
+const char *zylib_error_box_peek_function(const zylib_error_box_t *error_box);
+const void *zylib_error_box_peek_auxiliary_data(const zylib_error_box_t *error_box, uint64_t *p_size);
 
 ZYLIB_END_DECLS

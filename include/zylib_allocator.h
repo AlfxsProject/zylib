@@ -15,6 +15,7 @@
  */
 #pragma once
 #include "zylib_def.h"
+#include <stddef.h>
 
 /*
  * Type Definitions

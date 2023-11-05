@@ -18,173 +18,227 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/random.h>
 
-#define SIZE (512U)
-#define ITERATIONS (10U)
-
-#define PRINT_INFO(format, ...) ZYLIB_LOG_INFO(log, format, ##__VA_ARGS__)
-#define PRINT_WARN(format, ...) ZYLIB_LOG_WARN(log, format, ##__VA_ARGS__)
 #define PRINT_ERROR(format, ...) ZYLIB_LOG_ERROR(log, format, ##__VA_ARGS__)
 
 static zylib_log_t *log = NULL;
+static zylib_allocator_t *allocator = NULL;
+static zylib_dequeue_t *dequeue = NULL;
 
-static _Bool test_empty(const zylib_dequeue_t *dqe)
-{
-    _Bool r = false;
+/* Push, Peek */
+static inline _Bool test_push_peek(uint64_t before_size,
+                                   _Bool (*push)(zylib_dequeue_t *dequeue, uint64_t size, const void *p_void),
+                                   const void *(*peek)(const zylib_dequeue_t *dequeue, uint64_t *p_size));
 
-    if (zylib_dequeue_size(dqe) != 0)
-    {
-        PRINT_ERROR("zylib_dequeue_size()");
-        goto done;
-    }
+/* Push, Peek, Discard */
+static inline _Bool test_push_peek_discard(_Bool (*push)(zylib_dequeue_t *dequeue, uint64_t size, const void *p_void),
+                                           const void *(*peek)(const zylib_dequeue_t *dequeue, uint64_t *p_size),
+                                           void (*discard)(zylib_dequeue_t *dequeue));
 
-    if (!zylib_dequeue_is_empty(dqe))
-    {
-        PRINT_ERROR("zylib_dequeue_is_empty()");
-        goto done;
-    }
+/* Push First, Peek First, Discard First */
+static inline _Bool test_push_peek_discard_first();
 
-    r = true;
-done:
-    return r;
-}
+/* Push Last, Peek Last, Discard Last */
+static inline _Bool test_push_peek_discard_last();
 
-static _Bool test_size_positive_n(const zylib_dequeue_t *dqe, size_t n)
-{
-    _Bool r = false;
+/* Loop: Push, Peek; Clear */
+static inline _Bool test_loop_push_peek_clear(_Bool (*push)(zylib_dequeue_t *dequeue, uint64_t size,
+                                                            const void *p_void),
+                                              const void *(*peek)(const zylib_dequeue_t *dequeue, uint64_t *p_size));
 
-    if (zylib_dequeue_size(dqe) != n)
-    {
-        PRINT_ERROR("zylib_dequeue_size()");
-        goto done;
-    }
+/* Loop: Push First, Peek First; Clear */
+static inline _Bool test_loop_push_peek_clear_first();
 
-    if (zylib_dequeue_is_empty(dqe))
-    {
-        PRINT_ERROR("zylib_dequeue_is_empty()");
-        goto done;
-    }
-
-    r = true;
-done:
-    return r;
-}
-
-static _Bool test_loop(zylib_dequeue_t *dqe, _Bool (*push)(zylib_dequeue_t *, const zylib_box_t *),
-                       const zylib_box_t *(*peek)(const zylib_dequeue_t *))
-{
-    _Bool r = false;
-
-    if (!test_empty(dqe))
-    {
-        PRINT_ERROR("test_empty()");
-        goto done;
-    }
-
-    for (unsigned int i = 0; i < ITERATIONS; ++i)
-    {
-        const zylib_box_t *first;
-        char buf[SIZE] = {0};
-        zylib_box_t *const box = (zylib_box_t *)buf;
-        box->size = sizeof(buf) - sizeof(zylib_box_t);
-
-        if (getrandom(box->data, box->size, 0) != (ssize_t)box->size)
-        {
-            PRINT_ERROR("getrandom()");
-            goto done;
-        }
-
-        if (!push(dqe, box))
-        {
-            PRINT_ERROR("push()");
-            goto done;
-        }
-
-        if (!test_size_positive_n(dqe, i + 1))
-        {
-            PRINT_ERROR("test_size_positive_n");
-            goto done;
-        }
-
-        first = peek(dqe);
-
-        if (box->size != first->size)
-        {
-            PRINT_ERROR("peek(): size");
-            goto done;
-        }
-
-        if (memcmp(box->data, first->data, box->size) != 0)
-        {
-            PRINT_ERROR("peek(): data");
-            goto done;
-        }
-    }
-
-    zylib_dequeue_clear(dqe);
-
-    if (!test_empty(dqe))
-    {
-        PRINT_ERROR("test_empty()");
-        goto done;
-    }
-
-    r = true;
-done:
-    return r;
-}
+/* Loop: Push Last, Peek Last; Clear */
+static inline _Bool test_loop_push_peek_clear_last();
 
 int main()
 {
     int r = EXIT_FAILURE;
 
-    zylib_allocator_t *alloc = NULL;
-    zylib_dequeue_t *dqe = NULL;
-
-    if (!zylib_allocator_construct(&alloc, malloc, realloc, free))
+    if (!zylib_allocator_construct(&allocator, malloc, realloc, free))
     {
         fprintf(stderr, "zylib_allocator_construct()\n");
-        goto done;
+        goto error;
     }
 
-    if (!zylib_log_construct(&log, alloc, "zylib-test-dequeue-log.log", ZYLIB_INFO, ZYLIB_LOG_FORMAT_PLAIN))
+    if (!zylib_log_construct(&log, allocator, "zylib-test-dequeue-log.log", ZYLIB_INFO, ZYLIB_LOG_FORMAT_PLAIN))
     {
         fprintf(stderr, "zylib_log_construct()\n");
-        goto done;
+        goto error;
     }
 
-    if (!zylib_dequeue_construct(&dqe, alloc))
+    if (!zylib_dequeue_construct(&dequeue, allocator))
     {
         PRINT_ERROR("zylib_dequeue_construct()");
-        goto done;
+        goto error;
     }
 
-    if (!test_loop(dqe, zylib_dequeue_push_first, zylib_dequeue_peek_first))
+    /*
+     * TESTS
+     */
+
+    if (!zylib_dequeue_is_empty(dequeue))
     {
-        PRINT_ERROR("test_loop(): first");
-        goto done;
+        PRINT_ERROR("zylib_dequeue_is_empty() failed");
+        goto error;
     }
 
-    if (!test_loop(dqe, zylib_dequeue_push_last, zylib_dequeue_peek_last))
+    if (!test_push_peek_discard_first())
     {
-        PRINT_ERROR("test_loop(): last");
-        goto done;
+        PRINT_ERROR("test_push_peek_discard_first() failed");
+        goto error;
+    }
+
+    if (!test_push_peek_discard_last())
+    {
+        PRINT_ERROR("test_push_peek_discard_last() failed");
+        goto error;
+    }
+
+    if (!test_loop_push_peek_clear_first())
+    {
+        PRINT_ERROR("test_loop_push_peek_clear_first() failed");
+        goto error;
+    }
+
+    if (!test_loop_push_peek_clear_last())
+    {
+        PRINT_ERROR("test_loop_push_peek_clear_last() failed");
+        goto error;
+    }
+
+    if (!zylib_dequeue_is_empty(dequeue))
+    {
+        PRINT_ERROR("zylib_dequeue_is_empty() failed");
+        goto error;
     }
 
     r = EXIT_SUCCESS;
-done:
+error:
     if (log != NULL)
     {
         zylib_log_destruct(&log);
     }
-    if (dqe != NULL)
+    if (dequeue != NULL)
     {
-        zylib_dequeue_destruct(&dqe);
+        zylib_dequeue_destruct(&dequeue);
     }
-    if (alloc != NULL)
+    if (allocator != NULL)
     {
-        zylib_allocator_destruct(&alloc);
+        zylib_allocator_destruct(&allocator);
     }
     return r;
+}
+
+_Bool test_push_peek(uint64_t before_size, _Bool (*push)(zylib_dequeue_t *dequeue, uint64_t size, const void *p_void),
+                     const void *(*peek)(const zylib_dequeue_t *dequeue, uint64_t *p_size))
+{
+    _Bool r = 0;
+
+    void *ptr = NULL;
+    uint64_t ptr_size = 1;
+
+    const void *managed_ptr = NULL;
+    uint64_t managed_ptr_size = 0;
+
+    if (!zylib_allocator_malloc(allocator, ptr_size, &ptr))
+    {
+        PRINT_ERROR("zylib_allocator_malloc() failed");
+        goto error;
+    }
+
+    memset(ptr, 0, ptr_size);
+
+    if (!push(dequeue, ptr_size, ptr))
+    {
+        PRINT_ERROR("zylib_dequeue_push_first() failed");
+        goto error;
+    }
+
+    if (before_size + 1 != zylib_dequeue_size(dequeue))
+    {
+        PRINT_ERROR("zylib_dequeue_size() failed");
+        goto error;
+    }
+
+    managed_ptr = peek(dequeue, &managed_ptr_size);
+
+    if (managed_ptr_size != ptr_size || memcmp(ptr, managed_ptr, ptr_size) != 0)
+    {
+        PRINT_ERROR("zylib_dequeue_peek_first() failed");
+        goto error;
+    }
+
+    r = 1;
+error:
+    if (ptr != NULL)
+    {
+        zylib_allocator_free(allocator, &ptr);
+    }
+    return r;
+}
+
+_Bool test_push_peek_discard(_Bool (*push)(zylib_dequeue_t *dequeue, uint64_t size, const void *p_void),
+                             const void *(*peek)(const zylib_dequeue_t *dequeue, uint64_t *p_size),
+                             void (*discard)(zylib_dequeue_t *dequeue))
+{
+    size_t before_size = zylib_dequeue_size(dequeue);
+    _Bool r = test_push_peek(before_size, push, peek);
+
+    discard(dequeue);
+
+    if (before_size != zylib_dequeue_size(dequeue))
+    {
+        PRINT_ERROR("zylib_dequeue_size() failed");
+        goto error;
+    }
+error:
+    return r;
+}
+
+_Bool test_push_peek_discard_first()
+{
+    return test_push_peek_discard(zylib_dequeue_push_first, zylib_dequeue_peek_first, zylib_dequeue_discard_first);
+}
+
+_Bool test_push_peek_discard_last()
+{
+    return test_push_peek_discard(zylib_dequeue_push_last, zylib_dequeue_peek_last, zylib_dequeue_discard_last);
+}
+_Bool test_loop_push_peek_clear(_Bool (*push)(zylib_dequeue_t *dequeue, uint64_t size, const void *p_void),
+                                const void *(*peek)(const zylib_dequeue_t *dequeue, uint64_t *p_size))
+{
+    _Bool r = 0;
+
+    for (uint64_t i = 0; i < 100; ++i)
+    {
+        if (!test_push_peek(i, push, peek))
+        {
+            PRINT_ERROR("test_push_peek() failed");
+            goto error;
+        }
+    }
+
+    zylib_dequeue_clear(dequeue);
+
+    if (!zylib_dequeue_is_empty(dequeue))
+    {
+        PRINT_ERROR("zylib_dequeue_is_empty() failed");
+        goto error;
+    }
+
+    r = 1;
+error:
+    return r;
+}
+
+_Bool test_loop_push_peek_clear_first()
+{
+    return test_loop_push_peek_clear(zylib_dequeue_push_first, zylib_dequeue_peek_first);
+}
+
+_Bool test_loop_push_peek_clear_last()
+{
+    return test_loop_push_peek_clear(zylib_dequeue_push_last, zylib_dequeue_peek_last);
 }

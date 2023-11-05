@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 #pragma once
+#include "zylib_allocator.h"
+#include <stdint.h>
 
-#if defined(__cplusplus)
-#define ZYLIB_BEGIN_DECLS                                                                                              \
-    extern "C"                                                                                                         \
-    {
-#else
-#define ZYLIB_BEGIN_DECLS
-#endif
+typedef struct zylib_box_s zylib_box_t;
 
-#if defined(__cplusplus)
-#define ZYLIB_END_DECLS }
-#else
-#define ZYLIB_END_DECLS
-#endif
+ZYLIB_BEGIN_DECLS
+
+_Bool zylib_box_construct(zylib_box_t **p_box, const zylib_allocator_t *allocator, uint64_t size, const void *p_void);
+_Bool zylib_box_append(zylib_box_t **dest, const zylib_allocator_t *allocator, uint64_t size, const void *p_void);
+const void *zylib_box_split_latter(const zylib_box_t *src, uint64_t index, uint64_t *size);
+void zylib_box_destruct(zylib_box_t **p_box, const zylib_allocator_t *allocator);
+uint64_t zylib_box_peek_size(const zylib_box_t *box);
+const void *zylib_box_peek_data(const zylib_box_t *box);
+
+ZYLIB_END_DECLS

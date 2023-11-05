@@ -17,97 +17,102 @@
 #include "zylib_log.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
-#define BASE_SIZE (1U)
-#define ITERATIONS (10U)
-
-#define PRINT_INFO(format, ...) ZYLIB_LOG_INFO(log, format, ##__VA_ARGS__)
-#define PRINT_WARN(format, ...) ZYLIB_LOG_WARN(log, format, ##__VA_ARGS__)
 #define PRINT_ERROR(format, ...) ZYLIB_LOG_ERROR(log, format, ##__VA_ARGS__)
 
+static zylib_allocator_t *allocator = NULL;
 static zylib_log_t *log = NULL;
 
-static _Bool simulated_realloc_incremental_grow(const zylib_allocator_t *const alloc, size_t size, void **ptr)
-{
-    void *ptr_n = NULL;
-    _Bool r = 0;
-    if (!zylib_allocator_malloc(alloc, size, &ptr_n))
-    {
-        PRINT_ERROR("zylib_allocator_malloc");
-        goto done;
-    }
-    memcpy(ptr_n, *ptr, size - 1);
-    zylib_allocator_free(alloc, ptr);
-    *ptr = ptr_n;
-    r = 1;
-done:
-    return r;
-}
-
-static _Bool test_loop(const zylib_allocator_t *const alloc,
-                       _Bool (*realloc)(const zylib_allocator_t *alloc, size_t size, void **ptr))
-{
-    _Bool r = false;
-
-    void *ptr = NULL;
-
-    for (unsigned int i = 0; i < ITERATIONS; ++i)
-    {
-        if (!realloc(alloc, BASE_SIZE + i, &ptr))
-        {
-            PRINT_ERROR("realloc(%u)", BASE_SIZE + i);
-            goto done;
-        }
-    }
-
-    r = true;
-done:
-    if (ptr != NULL)
-    {
-        zylib_allocator_free(alloc, &ptr);
-    }
-    return r;
-}
+static inline _Bool test_malloc_free();
+static inline _Bool test_malloc_realloc_free();
 
 int main()
 {
     int r = EXIT_FAILURE;
-    zylib_allocator_t *alloc = NULL;
 
-    if (!zylib_allocator_construct(&alloc, malloc, realloc, free))
+    if (!zylib_allocator_construct(&allocator, malloc, realloc, free))
     {
-        fprintf(stderr, "zylib_allocator_construct()\n");
-        goto done;
+        fprintf(stderr, "zylib_allocator_construct() failed\n");
+        goto error;
     }
 
-    if (!zylib_log_construct(&log, alloc, "zylib-test-allocator-log.log", ZYLIB_INFO, ZYLIB_LOG_FORMAT_PLAIN))
+    if (!zylib_log_construct(&log, allocator, "zylib-test-allocator-log.log", ZYLIB_INFO, ZYLIB_LOG_FORMAT_PLAIN))
     {
-        fprintf(stderr, "zylib_log_construct()\n");
-        goto done;
+        fprintf(stderr, "zylib_log_construct() failed\n");
+        goto error;
     }
 
-    if (!test_loop(alloc, zylib_allocator_realloc))
+    /*
+     * TESTS
+     */
+
+    if (!test_malloc_free())
     {
-        PRINT_ERROR("test_loop: zylib_allocator_realloc");
-        goto done;
+        PRINT_ERROR("test_malloc_free() failed");
+        goto error;
     }
 
-    if (!test_loop(alloc, simulated_realloc_incremental_grow))
+    if (!test_malloc_realloc_free())
     {
-        PRINT_ERROR("test_loop: zylib_allocator_malloc");
-        goto done;
+        PRINT_ERROR("test_malloc_realloc_free() failed");
+        goto error;
     }
 
     r = EXIT_SUCCESS;
-done:
+error:
     if (log != NULL)
     {
         zylib_log_destruct(&log);
     }
-    if (alloc != NULL)
+    if (allocator != NULL)
     {
-        zylib_allocator_destruct(&alloc);
+        zylib_allocator_destruct(&allocator);
+    }
+    return r;
+}
+
+_Bool test_malloc_free()
+{
+    _Bool r = 0;
+    void *ptr = NULL;
+
+    if (!zylib_allocator_malloc(allocator, 1, &ptr))
+    {
+        PRINT_ERROR("zylib_allocator_malloc() failed");
+        goto error;
+    }
+
+    r = 1;
+error:
+    if (ptr != NULL)
+    {
+        zylib_allocator_free(allocator, &ptr);
+    }
+    return r;
+}
+
+_Bool test_malloc_realloc_free()
+{
+    _Bool r = 0;
+    void *ptr = NULL;
+
+    if (!zylib_allocator_malloc(allocator, 1, &ptr))
+    {
+        PRINT_ERROR("zylib_allocator_malloc() failed");
+        goto error;
+    }
+
+    if (!zylib_allocator_realloc(allocator, 2, &ptr))
+    {
+        PRINT_ERROR("zylib_allocator_realloc() failed");
+        goto error;
+    }
+
+    r = 1;
+error:
+    if (ptr != NULL)
+    {
+        zylib_allocator_free(allocator, &ptr);
     }
     return r;
 }

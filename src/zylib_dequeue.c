@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 #include "zylib_dequeue.h"
-#include <string.h>
+#include "zylib_box.h"
 
 typedef struct zylib_dequeue_box_s
 {
     struct zylib_dequeue_box_s *previous, *next;
-    zylib_box_t box;
+    zylib_box_t *box;
 } zylib_dequeue_box_t;
 
 struct zylib_dequeue_s
@@ -29,43 +29,87 @@ struct zylib_dequeue_s
     size_t size;
 };
 
-static _Bool zylib_dequeue_bx_construct(zylib_dequeue_box_t **const p_dequeue_box,
-                                        const zylib_allocator_t *const allocator, const zylib_box_t *const box)
+static inline void zylib_dequeue_box_destruct(zylib_dequeue_box_t **p_dequeue_box, const zylib_allocator_t *allocator);
+
+static _Bool zylib_dequeue_box_construct(zylib_dequeue_box_t **p_dequeue_box, const zylib_allocator_t *allocator,
+                                         size_t size, const void *p_void);
+
+_Bool zylib_dequeue_box_construct(zylib_dequeue_box_t **const p_dequeue_box, const zylib_allocator_t *const allocator,
+                                  size_t size, const void *p_void)
 {
-    _Bool r = 0; // ZYLIB_ERROR_INPUT_VALUE;
-    if (allocator != NULL && p_dequeue_box != NULL)
+    _Bool r;
+
+    if (p_dequeue_box == NULL || allocator == NULL || p_void == NULL)
     {
-        r = zylib_allocator_malloc(allocator, sizeof(zylib_dequeue_box_t) + box->size, (void **)p_dequeue_box);
-        if (r)
-        {
-            (*p_dequeue_box)->previous = NULL;
-            (*p_dequeue_box)->next = NULL;
-            memcpy(&(*p_dequeue_box)->box, box, sizeof(zylib_box_t) + box->size);
-        }
+        return 0;
     }
+
+    *p_dequeue_box = NULL;
+    r = zylib_allocator_malloc(allocator, sizeof(zylib_dequeue_box_t), (void **)p_dequeue_box);
+    if (!r)
+    {
+        goto error;
+    }
+
+    (*p_dequeue_box)->box = NULL;
+    r = zylib_box_construct(&(*p_dequeue_box)->box, allocator, size, p_void);
+    if (!r)
+    {
+        goto error;
+    }
+
+    (*p_dequeue_box)->previous = NULL;
+    (*p_dequeue_box)->next = NULL;
+
+    goto done;
+error:
+    zylib_dequeue_box_destruct(p_dequeue_box, allocator);
+done:
     return r;
 }
 
-static inline void zylib_dequeue_bx_destruct(zylib_dequeue_box_t **const p_dequeue_box,
-                                             const zylib_allocator_t *const allocator)
+void zylib_dequeue_box_destruct(zylib_dequeue_box_t **const p_dequeue_box, const zylib_allocator_t *const allocator)
 {
+    if (p_dequeue_box == NULL || *p_dequeue_box == NULL || allocator == NULL)
+    {
+        return;
+    }
+
+    if ((*p_dequeue_box)->box != NULL)
+    {
+        zylib_box_destruct(&(*p_dequeue_box)->box, allocator);
+    }
     zylib_allocator_free(allocator, (void **)p_dequeue_box);
 }
 
 _Bool zylib_dequeue_construct(zylib_dequeue_t **p_dequeue, const zylib_allocator_t *allocator)
 {
-    _Bool r = 0; // ZYLIB_ERROR_INPUT_VALUE;
-    if (p_dequeue != NULL && allocator != NULL)
+    _Bool r;
+
+    if (p_dequeue == NULL || allocator == NULL)
     {
-        r = zylib_allocator_malloc(allocator, sizeof(zylib_dequeue_t), (void **)p_dequeue);
-        if (r) // ZYLIB_OK
-        {
-            (*p_dequeue)->allocator = allocator;
-            (*p_dequeue)->first = NULL;
-            (*p_dequeue)->last = NULL;
-            (*p_dequeue)->size = 0;
-        }
+        return 0;
     }
+
+    *p_dequeue = NULL;
+    r = zylib_allocator_malloc(allocator, sizeof(zylib_dequeue_t), (void **)p_dequeue);
+    if (!r)
+    {
+        goto error;
+    }
+
+    (*p_dequeue)->allocator = allocator;
+    (*p_dequeue)->first = NULL;
+    (*p_dequeue)->last = NULL;
+    (*p_dequeue)->size = 0;
+
+    goto done;
+error:
+    if (*p_dequeue != NULL)
+    {
+        zylib_allocator_free(allocator, (void **)p_dequeue);
+    }
+done:
     return r;
 }
 
@@ -86,7 +130,7 @@ void zylib_dequeue_clear(zylib_dequeue_t *dequeue)
         while (p_dequeue_box != NULL)
         {
             zylib_dequeue_box_t *const p_next = p_dequeue_box->next;
-            zylib_dequeue_bx_destruct(&p_dequeue_box, dequeue->allocator);
+            zylib_dequeue_box_destruct(&p_dequeue_box, dequeue->allocator);
             p_dequeue_box = p_next;
         }
         dequeue->first = NULL;
@@ -95,55 +139,69 @@ void zylib_dequeue_clear(zylib_dequeue_t *dequeue)
     }
 }
 
-_Bool zylib_dequeue_push_first(zylib_dequeue_t *dequeue, const zylib_box_t *box)
+_Bool zylib_dequeue_push_first(zylib_dequeue_t *dequeue, uint64_t size, const void *p_void)
 {
-    _Bool r = 0; // ZYLIB_ERROR_INPUT_VALUE;
-    if (dequeue != NULL && box != NULL)
+    _Bool r;
+    zylib_dequeue_box_t *p_dequeue_box = NULL;
+
+    if (dequeue == NULL || size <= 0 || p_void == NULL)
     {
-        zylib_dequeue_box_t *p_dequeue_box;
-        r = zylib_dequeue_bx_construct(&p_dequeue_box, dequeue->allocator, box);
-        if (r) // ZYLIB_OK
-        {
-            if (dequeue->size != 0)
-            {
-                p_dequeue_box->next = dequeue->first;
-                dequeue->first->previous = p_dequeue_box;
-                dequeue->first = p_dequeue_box;
-            }
-            else
-            {
-                dequeue->first = p_dequeue_box;
-                dequeue->last = p_dequeue_box;
-            }
-            ++dequeue->size;
-        }
+        return 0;
     }
+
+    r = zylib_dequeue_box_construct(&p_dequeue_box, dequeue->allocator, size, p_void);
+    if (!r)
+    {
+        goto error;
+    }
+
+    if (dequeue->size != 0)
+    {
+        p_dequeue_box->next = dequeue->first;
+        dequeue->first->previous = p_dequeue_box;
+        dequeue->first = p_dequeue_box;
+    }
+    else
+    {
+        dequeue->first = p_dequeue_box;
+        dequeue->last = p_dequeue_box;
+    }
+    ++dequeue->size;
+
+error:
     return r;
 }
 
-_Bool zylib_dequeue_push_last(zylib_dequeue_t *dequeue, const zylib_box_t *box)
+_Bool zylib_dequeue_push_last(zylib_dequeue_t *dequeue, uint64_t size, const void *p_void)
 {
-    _Bool r = 0; // ZYLIB_ERROR_INPUT_VALUE;
-    if (dequeue != NULL && box != NULL)
+    _Bool r;
+    zylib_dequeue_box_t *p_dequeue_box;
+
+    if (dequeue == NULL || size <= 0 || p_void == NULL)
     {
-        zylib_dequeue_box_t *p_dequeue_box;
-        r = zylib_dequeue_bx_construct(&p_dequeue_box, dequeue->allocator, box);
-        if (r) // ZYLIB_OK
-        {
-            if (dequeue->size != 0)
-            {
-                p_dequeue_box->previous = dequeue->last;
-                dequeue->last->next = p_dequeue_box;
-                dequeue->last = p_dequeue_box;
-            }
-            else
-            {
-                dequeue->first = p_dequeue_box;
-                dequeue->last = p_dequeue_box;
-            }
-            ++dequeue->size;
-        }
+        return 0;
     }
+
+    r = zylib_dequeue_box_construct(&p_dequeue_box, dequeue->allocator, size, p_void);
+    if (!r)
+    {
+        goto error;
+    }
+
+    if (dequeue->size != 0)
+    {
+        p_dequeue_box->previous = dequeue->last;
+        dequeue->last->next = p_dequeue_box;
+        dequeue->last = p_dequeue_box;
+    }
+    else
+    {
+        dequeue->first = p_dequeue_box;
+        dequeue->last = p_dequeue_box;
+    }
+    ++dequeue->size;
+
+error:
     return r;
 }
 
@@ -162,7 +220,7 @@ void zylib_dequeue_discard_first(zylib_dequeue_t *dequeue)
             dequeue->first = NULL;
             dequeue->last = NULL;
         }
-        zylib_dequeue_bx_destruct(&p_dequeue_box, dequeue->allocator);
+        zylib_dequeue_box_destruct(&p_dequeue_box, dequeue->allocator);
         --dequeue->size;
     }
 }
@@ -182,25 +240,33 @@ void zylib_dequeue_discard_last(zylib_dequeue_t *dequeue)
             dequeue->first = NULL;
             dequeue->last = NULL;
         }
-        zylib_dequeue_bx_destruct(&p_dequeue_box, dequeue->allocator);
+        zylib_dequeue_box_destruct(&p_dequeue_box, dequeue->allocator);
         --dequeue->size;
     }
 }
 
-const zylib_box_t *zylib_dequeue_peek_first(const zylib_dequeue_t *dequeue)
+const void *zylib_dequeue_peek_first(const zylib_dequeue_t *dequeue, uint64_t *p_size)
 {
     if (dequeue != NULL)
     {
-        return (const zylib_box_t *)&dequeue->first->box;
+        if (p_size != NULL)
+        {
+            *p_size = zylib_box_peek_size(dequeue->first->box);
+        }
+        return zylib_box_peek_data(dequeue->first->box);
     }
     return NULL;
 }
 
-const zylib_box_t *zylib_dequeue_peek_last(const zylib_dequeue_t *dequeue)
+const void *zylib_dequeue_peek_last(const zylib_dequeue_t *dequeue, uint64_t *p_size)
 {
     if (dequeue != NULL)
     {
-        return (const zylib_box_t *)&dequeue->last->box;
+        if (p_size != NULL)
+        {
+            *p_size = zylib_box_peek_size(dequeue->last->box);
+        }
+        return zylib_box_peek_data(dequeue->last->box);
     }
     return NULL;
 }

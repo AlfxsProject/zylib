@@ -13,7 +13,9 @@ set(SOURCES include/zylib_allocator.h
         include/zylib_log.h
         src/zylib_log.c
         include/zylib_error.h
-        src/zylib_error.c)
+        src/zylib_error.c
+        src/lib/include/zylib_box.h
+        src/lib/src/zylib_box.c)
 
 add_library(zylib STATIC ${SOURCES})
 target_include_directories(zylib PUBLIC include PRIVATE src/lib/include)

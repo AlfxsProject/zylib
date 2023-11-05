@@ -15,6 +15,7 @@
  */
 #pragma once
 #include "zylib_allocator.h"
+#include <stdint.h>
 
 typedef struct zylib_dequeue_s zylib_dequeue_t;
 
@@ -23,12 +24,12 @@ ZYLIB_BEGIN_DECLS
 _Bool zylib_dequeue_construct(zylib_dequeue_t **p_dequeue, const zylib_allocator_t *allocator);
 void zylib_dequeue_destruct(zylib_dequeue_t **p_dequeue);
 void zylib_dequeue_clear(zylib_dequeue_t *dequeue);
-_Bool zylib_dequeue_push_first(zylib_dequeue_t *dequeue, const zylib_box_t *box);
-_Bool zylib_dequeue_push_last(zylib_dequeue_t *dequeue, const zylib_box_t *box);
+_Bool zylib_dequeue_push_first(zylib_dequeue_t *dequeue, uint64_t size, const void *p_void);
+_Bool zylib_dequeue_push_last(zylib_dequeue_t *dequeue, uint64_t size, const void *p_void);
 void zylib_dequeue_discard_first(zylib_dequeue_t *dequeue);
 void zylib_dequeue_discard_last(zylib_dequeue_t *dequeue);
-const zylib_box_t *zylib_dequeue_peek_first(const zylib_dequeue_t *dequeue);
-const zylib_box_t *zylib_dequeue_peek_last(const zylib_dequeue_t *dequeue);
+const void *zylib_dequeue_peek_first(const zylib_dequeue_t *dequeue, uint64_t *p_size);
+const void *zylib_dequeue_peek_last(const zylib_dequeue_t *dequeue, uint64_t *p_size);
 uint64_t zylib_dequeue_size(const zylib_dequeue_t *dequeue);
 _Bool zylib_dequeue_is_empty(const zylib_dequeue_t *dequeue);
 
