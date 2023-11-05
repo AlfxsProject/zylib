@@ -22,6 +22,12 @@ struct zylib_box_s
     void *data;
 };
 
+static inline _Bool zylib_box_get_address_by_index_const(const zylib_box_t *box, uint64_t index, uint64_t *p_size,
+                                                         const void **p_void);
+
+static inline _Bool zylib_box_get_address_by_index(const zylib_box_t *box, uint64_t index, uint64_t *p_size,
+                                                   void **p_void);
+
 _Bool zylib_box_construct(zylib_box_t **p_box, const zylib_allocator_t *allocator, uint64_t size, const void *p_void)
 {
     _Bool r;
@@ -59,6 +65,9 @@ _Bool zylib_box_append(zylib_box_t **dest, const zylib_allocator_t *allocator, u
 {
     _Bool r = 0;
 
+    uint64_t index;
+    void *address = NULL;
+
     if (dest == NULL || *dest == NULL || allocator == NULL || p_void == NULL)
     {
         goto error;
@@ -70,26 +79,24 @@ _Bool zylib_box_append(zylib_box_t **dest, const zylib_allocator_t *allocator, u
         goto error;
     }
 
-    memcpy((uint8_t *)(*dest)->data + (*dest)->size, p_void, size);
+    index = (*dest)->size;
     (*dest)->size += size;
+
+    r = zylib_box_get_address_by_index(*dest, index, NULL, &address);
+    if (!r)
+    {
+        goto error;
+    }
+
+    memcpy(address, p_void, size);
 
 error:
     return r;
 }
 
-const void *zylib_box_split_latter(const zylib_box_t *src, uint64_t index, uint64_t *size)
+_Bool zylib_box_split_latter(const zylib_box_t *box, uint64_t index, uint64_t *p_size, const void **p_void)
 {
-    if (src == NULL || index >= src->size)
-    {
-        return NULL;
-    }
-
-    if (size != NULL)
-    {
-        *size = src->size - index;
-    }
-
-    return (uint8_t *)src->data + index;
+    return zylib_box_get_address_by_index_const(box, index, p_size, p_void);
 }
 
 void zylib_box_destruct(zylib_box_t **p_box, const zylib_allocator_t *allocator)
@@ -114,4 +121,27 @@ uint64_t zylib_box_peek_size(const zylib_box_t *box)
 const void *zylib_box_peek_data(const zylib_box_t *box)
 {
     return box->data;
+}
+
+_Bool zylib_box_get_address_by_index(const zylib_box_t *box, uint64_t index, uint64_t *p_size, void **p_void)
+{
+    return zylib_box_get_address_by_index_const(box, index, p_size, (const void **)p_void);
+}
+
+_Bool zylib_box_get_address_by_index_const(const zylib_box_t *box, uint64_t index, uint64_t *p_size,
+                                           const void **p_void)
+{
+    if (box == NULL || index >= box->size || p_void == NULL)
+    {
+        return 0;
+    }
+
+    if (p_size != NULL)
+    {
+        *p_size = box->size - index;
+    }
+
+    *p_void = &((const uint8_t *)box->data)[index];
+
+    return 1;
 }
