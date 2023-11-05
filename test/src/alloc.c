@@ -15,16 +15,19 @@
  */
 #include "zylib_allocator.h"
 #include "zylib_log.h"
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define PRINT_ERROR(format, ...) ZYLIB_LOG_ERROR(log, format, ##__VA_ARGS__)
 
 static zylib_allocator_t *allocator = NULL;
 static zylib_log_t *log = NULL;
 
-static inline _Bool test_malloc_free();
-static inline _Bool test_malloc_realloc_free();
+static inline _Bool test_region(void *ptr, size_t size, int chr);
+static inline _Bool test_malloc_free(size_t m_size);
+static inline _Bool test_malloc_realloc_free(size_t m_size, size_t r_size);
 
 int main()
 {
@@ -46,13 +49,19 @@ int main()
      * TESTS
      */
 
-    if (!test_malloc_free())
+    if (!test_malloc_free((size_t)(rand() % 100 + 100)))
     {
         PRINT_ERROR("test_malloc_free() failed");
         goto error;
     }
 
-    if (!test_malloc_realloc_free())
+    if (!test_malloc_realloc_free((size_t)(rand() % 100 + 100), (size_t)(rand() % 100 + 500)))
+    {
+        PRINT_ERROR("test_malloc_realloc_free() failed");
+        goto error;
+    }
+
+    if (!test_malloc_realloc_free((size_t)(rand() % 100 + 500), (size_t)(rand() % 100 + 100)))
     {
         PRINT_ERROR("test_malloc_realloc_free() failed");
         goto error;
@@ -71,14 +80,20 @@ error:
     return r;
 }
 
-_Bool test_malloc_free()
+_Bool test_malloc_free(size_t m_size)
 {
     _Bool r = 0;
     void *ptr = NULL;
 
-    if (!zylib_allocator_malloc(allocator, 1, &ptr))
+    if (!zylib_allocator_malloc(allocator, m_size, &ptr))
     {
         PRINT_ERROR("zylib_allocator_malloc() failed");
+        goto error;
+    }
+
+    if (!test_region(ptr, m_size, rand() % 255))
+    {
+        PRINT_ERROR("test_region() failed");
         goto error;
     }
 
@@ -91,20 +106,32 @@ error:
     return r;
 }
 
-_Bool test_malloc_realloc_free()
+_Bool test_malloc_realloc_free(size_t m_size, size_t r_size)
 {
     _Bool r = 0;
     void *ptr = NULL;
 
-    if (!zylib_allocator_malloc(allocator, 1, &ptr))
+    if (!zylib_allocator_malloc(allocator, m_size, &ptr))
     {
         PRINT_ERROR("zylib_allocator_malloc() failed");
         goto error;
     }
 
-    if (!zylib_allocator_realloc(allocator, 2, &ptr))
+    if (!test_region(ptr, m_size, rand() % 255))
+    {
+        PRINT_ERROR("test_region() failed");
+        goto error;
+    }
+
+    if (!zylib_allocator_realloc(allocator, r_size, &ptr))
     {
         PRINT_ERROR("zylib_allocator_realloc() failed");
+        goto error;
+    }
+
+    if (!test_region(ptr, r_size, rand() % 255))
+    {
+        PRINT_ERROR("test_region() failed");
         goto error;
     }
 
@@ -114,5 +141,25 @@ error:
     {
         zylib_allocator_free(allocator, &ptr);
     }
+    return r;
+}
+
+_Bool test_region(void *ptr, size_t size, int chr)
+{
+    _Bool r = 0;
+
+    memset(ptr, chr, size);
+
+    for (size_t i = 0; i < size; ++i)
+    {
+        if (((uint8_t *)ptr)[i] != chr)
+        {
+            PRINT_ERROR("memset() failed");
+            goto error;
+        }
+    }
+
+    r = 1;
+error:
     return r;
 }
