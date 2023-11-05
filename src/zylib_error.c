@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 #include "zylib_error.h"
-#include "zylib_box.h"
 #include "zylib_dequeue.h"
+#include "zylib_lib_box.h"
 
 /*
  * Types
@@ -44,7 +44,7 @@ static _Bool zylib_error_push(zylib_error_t *error, int64_t code, const char *fi
                               size_t size, const void *data, _Bool (*push)(zylib_dequeue_t *, size_t, const void *))
 {
     _Bool r = 0;
-    zylib_box_t *box = NULL;
+    zylib_lib_box_t *box = NULL;
     const zylib_error_box_t error_box = {.size = size, .code = code, .file = file, .line = line, .function = function};
 
     uint64_t i;
@@ -55,7 +55,7 @@ static _Bool zylib_error_push(zylib_error_t *error, int64_t code, const char *fi
         goto error;
     }
 
-    r = zylib_box_construct(&box, error->allocator, sizeof(zylib_error_box_t), &error_box);
+    r = zylib_lib_box_construct(&box, error->allocator, sizeof(zylib_error_box_t), &error_box);
     if (!r)
     {
         goto error;
@@ -63,20 +63,20 @@ static _Bool zylib_error_push(zylib_error_t *error, int64_t code, const char *fi
 
     if (size > 0 && data != NULL)
     {
-        r = zylib_box_append(&box, size, data);
+        r = zylib_lib_box_append(&box, size, data);
         if (!r)
         {
             goto error;
         }
     }
 
-    r = zylib_box_peek_size(box, &i);
+    r = zylib_lib_box_peek_size(box, &i);
     if (!r)
     {
         goto error;
     }
 
-    r = zylib_box_peek_data(box, &s);
+    r = zylib_lib_box_peek_data(box, &s);
     if (!r)
     {
         goto error;
@@ -91,7 +91,7 @@ static _Bool zylib_error_push(zylib_error_t *error, int64_t code, const char *fi
 error:
     if (box != NULL)
     {
-        zylib_box_destruct(&box);
+        zylib_lib_box_destruct(&box);
     }
     return r;
 }

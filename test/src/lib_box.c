@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "zylib_box.h"
+#include "zylib_lib_box.h"
 #include "zylib_log.h"
 #include <stdlib.h>
 #include <string.h>
@@ -77,7 +77,7 @@ _Bool test_box()
     uint64_t managed_size = 0;
     const void *managed_data = NULL;
 
-    zylib_box_t *box = NULL;
+    zylib_lib_box_t *box = NULL;
 
     if (!zylib_allocator_malloc(allocator, size_1, &data_1))
     {
@@ -94,47 +94,47 @@ _Bool test_box()
     memset(data_1, rand() % 256, size_1);
     memset(data_2, rand() % 256, size_2);
 
-    if (!zylib_box_construct(&box, allocator, size_1, data_1))
+    if (!zylib_lib_box_construct(&box, allocator, size_1, data_1))
     {
-        PRINT_ERROR("zylib_box_construct() failed");
+        PRINT_ERROR("zylib_lib_box_construct() failed");
         goto error;
     }
 
-    if (!zylib_box_peek_size(box, &managed_size) || managed_size != size_1)
+    if (!zylib_lib_box_peek_size(box, &managed_size) || managed_size != size_1)
     {
-        PRINT_ERROR("zylib_box_peek_size() failed");
+        PRINT_ERROR("zylib_lib_box_peek_size() failed");
         goto error;
     }
 
-    if (!zylib_box_peek_data(box, &managed_data) || memcmp(data_1, managed_data, size_1) != 0)
+    if (!zylib_lib_box_peek_data(box, &managed_data) || memcmp(data_1, managed_data, size_1) != 0)
     {
-        PRINT_ERROR("zylib_box_peek_data() failed");
+        PRINT_ERROR("zylib_lib_box_peek_data() failed");
         goto error;
     }
 
-    if (!zylib_box_append(&box, size_2, data_2))
+    if (!zylib_lib_box_append(&box, size_2, data_2))
     {
-        PRINT_ERROR("zylib_box_append() failed");
+        PRINT_ERROR("zylib_lib_box_append() failed");
         goto error;
     }
 
-    if (!zylib_box_peek_size(box, &managed_size) || managed_size != size_1 + size_2)
+    if (!zylib_lib_box_peek_size(box, &managed_size) || managed_size != size_1 + size_2)
     {
-        PRINT_ERROR("zylib_box_peek_size() failed");
+        PRINT_ERROR("zylib_lib_box_peek_size() failed");
         goto error;
     }
 
-    if (!zylib_box_peek_data(box, &managed_data) || memcmp(data_1, managed_data, size_1) != 0 ||
+    if (!zylib_lib_box_peek_data(box, &managed_data) || memcmp(data_1, managed_data, size_1) != 0 ||
         memcmp(data_2, &((const uint8_t *)managed_data)[size_1], size_2) != 0)
     {
-        PRINT_ERROR("zylib_box_peek_data() failed");
+        PRINT_ERROR("zylib_lib_box_peek_data() failed");
         goto error;
     }
 
-    if (!zylib_box_split_latter(box, size_1, &managed_size, &managed_data) || managed_size != size_2 ||
+    if (!zylib_lib_box_split_latter(box, size_1, &managed_size, &managed_data) || managed_size != size_2 ||
         memcmp(data_2, managed_data, size_2) != 0)
     {
-        PRINT_ERROR("zylib_box_split_latter() failed");
+        PRINT_ERROR("zylib_lib_box_split_latter() failed");
         goto error;
     }
 
@@ -150,7 +150,7 @@ error:
     }
     if (box != NULL)
     {
-        zylib_box_destruct(&box);
+        zylib_lib_box_destruct(&box);
     }
     return r;
 }
