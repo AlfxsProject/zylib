@@ -16,7 +16,7 @@ name, error code, and auxiliary data.
 
 ### Logger API
 
-The `logger API` provides the ability to enhance understanding about the flow of software. The API allows the user to
+The `logger API` provides the ability to enhance understanding about the flow of a program. The API allows the user to
 store detailed information about the frame of interest; this includes the file, line number, function name, severity,
 and formatted message. The levels of severity include fatal, error, warning, and info. Additionally, the logger API
 supports multiple message formats, including plaintext, comma-separated values (CSV), and extensible markup language (
@@ -26,7 +26,7 @@ XML).
 
 Implementations for various common data structures are provided; these include double-ended queues (dequeue),
 variable-length arrays (vector), self-balancing binary search trees (Ordered Set/Map), hash tables (Unordered Set/Map),
-and circular double-ended linked lists (list).
+and doubly-linked lists (list).
 
 ## Support
 
