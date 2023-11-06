@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 #include "zylib_dequeue.h"
-#include "zylib_lib_box.h"
+#include "zylib_private_box.h"
 
 typedef struct zylib_dequeue_box_s
 {
     struct zylib_dequeue_box_s *previous, *next;
-    zylib_lib_box_t *box;
+    zylib_private_box_t *box;
 } zylib_dequeue_box_t;
 
 struct zylib_dequeue_s
@@ -52,7 +52,7 @@ _Bool zylib_dequeue_box_construct(zylib_dequeue_box_t **const p_dequeue_box, con
     }
 
     (*p_dequeue_box)->box = NULL;
-    r = zylib_lib_box_construct(&(*p_dequeue_box)->box, allocator, size, p_void);
+    r = zylib_private_box_construct(&(*p_dequeue_box)->box, allocator, size, p_void);
     if (!r)
     {
         goto error;
@@ -77,7 +77,7 @@ void zylib_dequeue_box_destruct(zylib_dequeue_box_t **const p_dequeue_box, const
 
     if ((*p_dequeue_box)->box != NULL)
     {
-        zylib_lib_box_destruct(&(*p_dequeue_box)->box);
+        zylib_private_box_destruct(&(*p_dequeue_box)->box);
     }
     zylib_allocator_free(allocator, (void **)p_dequeue_box);
 }
@@ -249,13 +249,11 @@ const void *zylib_dequeue_peek_first(const zylib_dequeue_t *dequeue, uint64_t *p
 {
     if (dequeue != NULL)
     {
-        const void *data;
         if (p_size != NULL)
         {
-            zylib_lib_box_peek_size(dequeue->first->box, p_size);
+            *p_size = zylib_private_box_peek_size(dequeue->first->box);
         }
-        zylib_lib_box_peek_data(dequeue->first->box, &data);
-        return data;
+        return zylib_private_box_peek_data(dequeue->first->box);
     }
     return NULL;
 }
@@ -264,13 +262,11 @@ const void *zylib_dequeue_peek_last(const zylib_dequeue_t *dequeue, uint64_t *p_
 {
     if (dequeue != NULL)
     {
-        const void *data;
         if (p_size != NULL)
         {
-            zylib_lib_box_peek_size(dequeue->last->box, p_size);
+            *p_size = zylib_private_box_peek_size(dequeue->last->box);
         }
-        zylib_lib_box_peek_data(dequeue->last->box, &data);
-        return data;
+        return zylib_private_box_peek_data(dequeue->last->box);
     }
     return NULL;
 }

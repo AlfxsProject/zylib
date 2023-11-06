@@ -17,27 +17,27 @@
 #include "zylib_allocator.h"
 #include <stdint.h>
 
-typedef struct zylib_lib_box_s zylib_lib_box_t;
+typedef struct zylib_private_box_s zylib_private_box_t;
 
 ZYLIB_BEGIN_DECLS
 
 ZYLIB_NONNULL
-_Bool zylib_lib_box_construct(zylib_lib_box_t **box, const zylib_allocator_t *allocator, uint64_t size,
-                              const void *data);
+_Bool zylib_private_box_construct(zylib_private_box_t **box, const zylib_allocator_t *allocator, uint64_t size,
+                                  const void *data);
 
 ZYLIB_NONNULL
-void zylib_lib_box_destruct(zylib_lib_box_t **box);
+void zylib_private_box_destruct(zylib_private_box_t **box);
 
 ZYLIB_NONNULL
-_Bool zylib_lib_box_append(zylib_lib_box_t **box, uint64_t size, const void *data);
+_Bool zylib_private_box_append(zylib_private_box_t **box, uint64_t size, const void *data);
 
 ZYLIB_NONNULL
-_Bool zylib_lib_box_split_latter(const zylib_lib_box_t *box, uint64_t index, uint64_t *size, const void **data);
+_Bool zylib_private_box_split_latter(const zylib_private_box_t *box, uint64_t index, uint64_t *size, const void **data);
 
 ZYLIB_NONNULL
-_Bool zylib_lib_box_peek_size(const zylib_lib_box_t *box, uint64_t *size);
+uint64_t zylib_private_box_peek_size(const zylib_private_box_t *box);
 
 ZYLIB_NONNULL
-_Bool zylib_lib_box_peek_data(const zylib_lib_box_t *box, const void **data);
+const void *zylib_private_box_peek_data(const zylib_private_box_t *box);
 
 ZYLIB_END_DECLS

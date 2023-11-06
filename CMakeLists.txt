@@ -5,19 +5,19 @@ set(CMAKE_C_STANDARD 23)
 
 enable_testing()
 
-set(SOURCES include/zylib_allocator.h
-        src/zylib_allocator.c
-        include/zylib_def.h
-        include/zylib_dequeue.h
-        src/zylib_dequeue.c
-        include/zylib_log.h
-        src/zylib_log.c
-        include/zylib_error.h
-        src/zylib_error.c
-        src/lib/include/zylib_lib_box.h
-        src/lib/src/zylib_lib_box.c)
+set(SOURCES public/include/zylib_allocator.h
+        public/src/zylib_allocator.c
+        public/include/zylib_def.h
+        public/include/zylib_dequeue.h
+        public/src/zylib_dequeue.c
+        public/include/zylib_log.h
+        public/src/zylib_log.c
+        public/include/zylib_error.h
+        public/src/zylib_error.c
+        private/include/zylib_private_box.h
+        private/src/zylib_private_box.c)
 
 add_library(zylib STATIC ${SOURCES})
-target_include_directories(zylib PUBLIC include PRIVATE src/lib/include)
+target_include_directories(zylib PUBLIC public/include PRIVATE private/include)
 
 add_subdirectory(test)
