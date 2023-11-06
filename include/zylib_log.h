@@ -73,11 +73,15 @@ typedef enum zylib_log_format_e
 
 ZYLIB_BEGIN_DECLS
 
+ZYLIB_NONNULL
 _Bool zylib_log_construct(zylib_log_t **log, const zylib_allocator_t *alloc, FILE *file, zylib_log_severity_t severity,
                           zylib_log_format_t format);
+
+ZYLIB_NONNULL
 void zylib_log_destruct(zylib_log_t **log);
 
-/* Internal Use Only. */
+ZYLIB_PRINTF_LIKE(6, 7)
+ZYLIB_NONNULL
 size_t zylib_log_write(const zylib_log_t *log, zylib_log_severity_t severity, const char *file, size_t line,
                        const char *function, const char *format, ...);
 
