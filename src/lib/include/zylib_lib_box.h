@@ -21,12 +21,23 @@ typedef struct zylib_lib_box_s zylib_lib_box_t;
 
 ZYLIB_BEGIN_DECLS
 
+ZYLIB_NONNULL
 _Bool zylib_lib_box_construct(zylib_lib_box_t **box, const zylib_allocator_t *allocator, uint64_t size,
                               const void *data);
+
+ZYLIB_NONNULL
 void zylib_lib_box_destruct(zylib_lib_box_t **box);
+
+ZYLIB_NONNULL
 _Bool zylib_lib_box_append(zylib_lib_box_t **box, uint64_t size, const void *data);
+
+ZYLIB_NONNULL
 _Bool zylib_lib_box_split_latter(const zylib_lib_box_t *box, uint64_t index, uint64_t *size, const void **data);
+
+ZYLIB_NONNULL
 _Bool zylib_lib_box_peek_size(const zylib_lib_box_t *box, uint64_t *size);
+
+ZYLIB_NONNULL
 _Bool zylib_lib_box_peek_data(const zylib_lib_box_t *box, const void **data);
 
 ZYLIB_END_DECLS

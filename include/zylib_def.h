@@ -28,3 +28,15 @@
 #else
 #define ZYLIB_END_DECLS
 #endif
+
+#if defined(__GNUC__)
+#define ZYLIB_PRINTF_LIKE(n, m) __attribute__((format(printf, n, m)))
+#else
+#define ZYLIB_PRINTF_LIKE(n, m)
+#endif
+
+#if defined(__GNUC__)
+#define ZYLIB_NONNULL __attribute__((nonnull))
+#else
+#define ZYLIB_NONNULL
+#endif
