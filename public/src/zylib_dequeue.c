@@ -15,273 +15,70 @@
  */
 #include "zylib_dequeue.h"
 #include "zylib_private_box.h"
+#include "zylib_private_dequeue.h"
 
-typedef struct zylib_dequeue_box_s
+_Bool zylib_dequeue_construct(zylib_dequeue_t **obj, const zylib_allocator_t *allocator)
 {
-    struct zylib_dequeue_box_s *previous, *next;
-    zylib_private_box_t *box;
-} zylib_dequeue_box_t;
-
-struct zylib_dequeue_s
-{
-    const zylib_allocator_t *allocator;
-    zylib_dequeue_box_t *first, *last;
-    size_t size;
-};
-
-static inline void zylib_dequeue_box_destruct(zylib_dequeue_box_t **p_dequeue_box, const zylib_allocator_t *allocator);
-
-static _Bool zylib_dequeue_box_construct(zylib_dequeue_box_t **p_dequeue_box, const zylib_allocator_t *allocator,
-                                         size_t size, const void *p_void);
-
-_Bool zylib_dequeue_box_construct(zylib_dequeue_box_t **const p_dequeue_box, const zylib_allocator_t *const allocator,
-                                  size_t size, const void *p_void)
-{
-    _Bool r;
-
-    if (p_dequeue_box == NULL || allocator == NULL || p_void == NULL)
-    {
-        return 0;
-    }
-
-    *p_dequeue_box = NULL;
-    r = zylib_allocator_malloc(allocator, sizeof(zylib_dequeue_box_t), (void **)p_dequeue_box);
-    if (!r)
-    {
-        goto error;
-    }
-
-    (*p_dequeue_box)->box = NULL;
-    r = zylib_private_box_construct(&(*p_dequeue_box)->box, allocator, size, p_void);
-    if (!r)
-    {
-        goto error;
-    }
-
-    (*p_dequeue_box)->previous = NULL;
-    (*p_dequeue_box)->next = NULL;
-
-    goto done;
-error:
-    zylib_dequeue_box_destruct(p_dequeue_box, allocator);
-done:
-    return r;
+    return zylib_private_dequeue_construct((zylib_private_dequeue_t **)obj,
+                                           (const zylib_private_allocator_t *)allocator);
 }
 
-void zylib_dequeue_box_destruct(zylib_dequeue_box_t **const p_dequeue_box, const zylib_allocator_t *const allocator)
+void zylib_dequeue_destruct(zylib_dequeue_t **obj)
 {
-    if (p_dequeue_box == NULL || *p_dequeue_box == NULL || allocator == NULL)
-    {
-        return;
-    }
-
-    if ((*p_dequeue_box)->box != NULL)
-    {
-        zylib_private_box_destruct(&(*p_dequeue_box)->box);
-    }
-    zylib_allocator_free(allocator, (void **)p_dequeue_box);
+    zylib_private_dequeue_destruct((zylib_private_dequeue_t **)obj);
 }
 
-_Bool zylib_dequeue_construct(zylib_dequeue_t **p_dequeue, const zylib_allocator_t *allocator)
+void zylib_dequeue_clear(zylib_dequeue_t *obj)
 {
-    _Bool r;
-
-    if (p_dequeue == NULL || allocator == NULL)
-    {
-        return 0;
-    }
-
-    *p_dequeue = NULL;
-    r = zylib_allocator_malloc(allocator, sizeof(zylib_dequeue_t), (void **)p_dequeue);
-    if (!r)
-    {
-        goto error;
-    }
-
-    (*p_dequeue)->allocator = allocator;
-    (*p_dequeue)->first = NULL;
-    (*p_dequeue)->last = NULL;
-    (*p_dequeue)->size = 0;
-
-    goto done;
-error:
-    if (*p_dequeue != NULL)
-    {
-        zylib_allocator_free(allocator, (void **)p_dequeue);
-    }
-done:
-    return r;
+    zylib_private_dequeue_clear((zylib_private_dequeue_t *)obj);
 }
 
-void zylib_dequeue_destruct(zylib_dequeue_t **p_dequeue)
+_Bool zylib_dequeue_push_first(zylib_dequeue_t *obj, uint64_t size, const void *data)
 {
-    if (p_dequeue != NULL && *p_dequeue != NULL)
-    {
-        zylib_dequeue_clear(*p_dequeue);
-        zylib_allocator_free((*p_dequeue)->allocator, (void **)p_dequeue);
-    }
+    return zylib_private_dequeue_push_first((zylib_private_dequeue_t *)obj, size, data);
 }
 
-void zylib_dequeue_clear(zylib_dequeue_t *dequeue)
+_Bool zylib_dequeue_push_last(zylib_dequeue_t *obj, uint64_t size, const void *data)
 {
-    if (dequeue != NULL)
-    {
-        zylib_dequeue_box_t *p_dequeue_box = dequeue->first;
-        while (p_dequeue_box != NULL)
-        {
-            zylib_dequeue_box_t *const p_next = p_dequeue_box->next;
-            zylib_dequeue_box_destruct(&p_dequeue_box, dequeue->allocator);
-            p_dequeue_box = p_next;
-        }
-        dequeue->first = NULL;
-        dequeue->last = NULL;
-        dequeue->size = 0;
-    }
+    return zylib_private_dequeue_push_last((zylib_private_dequeue_t *)obj, size, data);
 }
 
-_Bool zylib_dequeue_push_first(zylib_dequeue_t *dequeue, uint64_t size, const void *p_void)
+void zylib_dequeue_discard_first(zylib_dequeue_t *obj)
 {
-    _Bool r;
-    zylib_dequeue_box_t *p_dequeue_box = NULL;
-
-    if (dequeue == NULL || size <= 0 || p_void == NULL)
-    {
-        return 0;
-    }
-
-    r = zylib_dequeue_box_construct(&p_dequeue_box, dequeue->allocator, size, p_void);
-    if (!r)
-    {
-        goto error;
-    }
-
-    if (dequeue->size != 0)
-    {
-        p_dequeue_box->next = dequeue->first;
-        dequeue->first->previous = p_dequeue_box;
-        dequeue->first = p_dequeue_box;
-    }
-    else
-    {
-        dequeue->first = p_dequeue_box;
-        dequeue->last = p_dequeue_box;
-    }
-    ++dequeue->size;
-
-error:
-    return r;
+    zylib_private_dequeue_discard_first((zylib_private_dequeue_t *)obj);
 }
 
-_Bool zylib_dequeue_push_last(zylib_dequeue_t *dequeue, uint64_t size, const void *p_void)
+void zylib_dequeue_discard_last(zylib_dequeue_t *obj)
 {
-    _Bool r;
-    zylib_dequeue_box_t *p_dequeue_box;
-
-    if (dequeue == NULL || size <= 0 || p_void == NULL)
-    {
-        return 0;
-    }
-
-    r = zylib_dequeue_box_construct(&p_dequeue_box, dequeue->allocator, size, p_void);
-    if (!r)
-    {
-        goto error;
-    }
-
-    if (dequeue->size != 0)
-    {
-        p_dequeue_box->previous = dequeue->last;
-        dequeue->last->next = p_dequeue_box;
-        dequeue->last = p_dequeue_box;
-    }
-    else
-    {
-        dequeue->first = p_dequeue_box;
-        dequeue->last = p_dequeue_box;
-    }
-    ++dequeue->size;
-
-error:
-    return r;
+    zylib_private_dequeue_discard_last((zylib_private_dequeue_t *)obj);
 }
 
-void zylib_dequeue_discard_first(zylib_dequeue_t *dequeue)
+const void *zylib_dequeue_peek_first(const zylib_dequeue_t *obj, uint64_t *size)
 {
-    if (dequeue != NULL && dequeue->size != 0)
+    const void *data;
+    if (!zylib_private_dequeue_peek_first((const zylib_private_dequeue_t *)obj, size, &data))
     {
-        zylib_dequeue_box_t *p_dequeue_box = dequeue->first;
-        if (p_dequeue_box->next != NULL)
-        {
-            p_dequeue_box->next->previous = NULL;
-            dequeue->first = p_dequeue_box->next;
-        }
-        else
-        {
-            dequeue->first = NULL;
-            dequeue->last = NULL;
-        }
-        zylib_dequeue_box_destruct(&p_dequeue_box, dequeue->allocator);
-        --dequeue->size;
+        return NULL;
     }
+    return data;
 }
 
-void zylib_dequeue_discard_last(zylib_dequeue_t *dequeue)
+const void *zylib_dequeue_peek_last(const zylib_dequeue_t *obj, uint64_t *size)
 {
-    if (dequeue != NULL && dequeue->size != 0)
+    const void *data;
+    if (!zylib_private_dequeue_peek_last((const zylib_private_dequeue_t *)obj, size, &data))
     {
-        zylib_dequeue_box_t *p_dequeue_box = dequeue->last;
-        if (p_dequeue_box->previous != NULL)
-        {
-            p_dequeue_box->previous->next = NULL;
-            dequeue->last = p_dequeue_box->previous;
-        }
-        else
-        {
-            dequeue->first = NULL;
-            dequeue->last = NULL;
-        }
-        zylib_dequeue_box_destruct(&p_dequeue_box, dequeue->allocator);
-        --dequeue->size;
+        return NULL;
     }
+    return data;
 }
 
-const void *zylib_dequeue_peek_first(const zylib_dequeue_t *dequeue, uint64_t *p_size)
+uint64_t zylib_dequeue_size(const zylib_dequeue_t *obj)
 {
-    if (dequeue != NULL)
-    {
-        if (p_size != NULL)
-        {
-            *p_size = zylib_private_box_peek_size(dequeue->first->box);
-        }
-        return zylib_private_box_peek_data(dequeue->first->box);
-    }
-    return NULL;
+    return zylib_private_dequeue_size((const zylib_private_dequeue_t *)obj);
 }
 
-const void *zylib_dequeue_peek_last(const zylib_dequeue_t *dequeue, uint64_t *p_size)
+_Bool zylib_dequeue_is_empty(const zylib_dequeue_t *obj)
 {
-    if (dequeue != NULL)
-    {
-        if (p_size != NULL)
-        {
-            *p_size = zylib_private_box_peek_size(dequeue->last->box);
-        }
-        return zylib_private_box_peek_data(dequeue->last->box);
-    }
-    return NULL;
-}
-
-uint64_t zylib_dequeue_size(const zylib_dequeue_t *dequeue)
-{
-    size_t size = SIZE_MAX;
-    if (dequeue != NULL)
-    {
-        size = dequeue->size;
-    }
-    return size;
-}
-
-_Bool zylib_dequeue_is_empty(const zylib_dequeue_t *dequeue)
-{
-    return dequeue->size == 0;
+    return zylib_private_dequeue_is_empty((const zylib_private_dequeue_t *)obj);
 }

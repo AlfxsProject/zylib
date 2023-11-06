@@ -17,7 +17,9 @@ set(SOURCES public/include/zylib_allocator.h
         private/include/zylib_private_box.h
         private/src/zylib_private_box.c
         private/include/zylib_private_allocator.h
-        private/src/zylib_private_allocator.c)
+        private/src/zylib_private_allocator.c
+        private/include/zylib_private_dequeue.h
+        private/src/zylib_private_dequeue.c)
 
 add_library(zylib STATIC ${SOURCES})
 target_include_directories(zylib PUBLIC public/include PRIVATE private/include)

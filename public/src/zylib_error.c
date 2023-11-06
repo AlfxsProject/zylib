@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 #include "zylib_error.h"
-#include "zylib_dequeue.h"
 #include "zylib_private_box.h"
+#include "zylib_private_dequeue.h"
 
 /*
  * Types
@@ -24,7 +24,7 @@
 struct zylib_error_s
 {
     const zylib_allocator_t *allocator;
-    zylib_dequeue_t *dequeue;
+    zylib_private_dequeue_t *dequeue;
 };
 
 struct zylib_error_box_s
@@ -41,7 +41,8 @@ struct zylib_error_box_s
  */
 
 static _Bool zylib_error_push(zylib_error_t *error, int64_t code, const char *file, uint64_t line, const char *function,
-                              size_t size, const void *data, _Bool (*push)(zylib_dequeue_t *, size_t, const void *))
+                              size_t size, const void *data,
+                              _Bool (*push)(zylib_private_dequeue_t *, size_t, const void *))
 {
     _Bool r = 0;
     zylib_private_box_t *box = NULL;
@@ -87,133 +88,145 @@ error:
     return r;
 }
 
-_Bool zylib_error_construct(zylib_error_t **p_error, const zylib_allocator_t *allocator)
+_Bool zylib_error_construct(zylib_error_t **obj, const zylib_allocator_t *allocator)
 {
     _Bool r;
 
-    if (p_error == NULL || allocator == NULL)
+    if (obj == NULL || allocator == NULL)
     {
         return 0;
     }
 
-    *p_error = NULL;
-    r = zylib_allocator_malloc(allocator, sizeof(zylib_error_t), (void **)p_error);
+    *obj = NULL;
+    r = zylib_allocator_malloc(allocator, sizeof(zylib_error_t), (void **)obj);
     if (!r)
     {
         goto error;
     }
 
-    r = zylib_dequeue_construct(&(*p_error)->dequeue, allocator);
+    r = zylib_private_dequeue_construct(&(*obj)->dequeue, (const zylib_private_allocator_t *)allocator);
     if (!r)
     {
         goto error;
     }
 
-    (*p_error)->allocator = allocator;
+    (*obj)->allocator = allocator;
 
     goto done;
 error:
-    if (*p_error != NULL)
+    if (*obj != NULL)
     {
-        if ((*p_error)->dequeue != NULL)
+        if ((*obj)->dequeue != NULL)
         {
-            zylib_dequeue_destruct(&(*p_error)->dequeue);
+            zylib_private_dequeue_destruct(&(*obj)->dequeue);
         }
-        zylib_allocator_free(allocator, (void **)p_error);
+        zylib_allocator_free(allocator, (void **)obj);
     }
 done:
     return r;
 }
 
-void zylib_error_destruct(zylib_error_t **p_error)
+void zylib_error_destruct(zylib_error_t **obj)
 {
-    if (p_error == NULL || *p_error == NULL)
+    if (obj == NULL || *obj == NULL)
     {
         return;
     }
 
-    zylib_dequeue_destruct(&(*p_error)->dequeue);
-    zylib_allocator_free((*p_error)->allocator, (void **)p_error);
+    zylib_private_dequeue_destruct(&(*obj)->dequeue);
+    zylib_allocator_free((*obj)->allocator, (void **)obj);
 }
 
-void zylib_error_clear(zylib_error_t *error)
+void zylib_error_clear(zylib_error_t *obj)
 {
-    zylib_dequeue_clear(error->dequeue);
+    zylib_private_dequeue_clear(obj->dequeue);
 }
 
-_Bool zylib_error_push_first(zylib_error_t *error, int64_t code, const char *file, uint64_t line, const char *function,
+_Bool zylib_error_push_first(zylib_error_t *obj, int64_t code, const char *file, uint64_t line, const char *function,
                              uint64_t size, const void *p_void)
 {
-    return zylib_error_push(error, code, file, line, function, size, p_void, zylib_dequeue_push_first);
+    return zylib_error_push(obj, code, file, line, function, size, p_void, zylib_private_dequeue_push_first);
 }
 
-_Bool zylib_error_push_last(zylib_error_t *error, int64_t code, const char *file, uint64_t line, const char *function,
+_Bool zylib_error_push_last(zylib_error_t *obj, int64_t code, const char *file, uint64_t line, const char *function,
                             uint64_t size, const void *p_void)
 {
-    return zylib_error_push(error, code, file, line, function, size, p_void, zylib_dequeue_push_last);
+    return zylib_error_push(obj, code, file, line, function, size, p_void, zylib_private_dequeue_push_last);
 }
 
-void zylib_error_discard_first(zylib_error_t *error)
+void zylib_error_discard_first(zylib_error_t *obj)
 {
-    zylib_dequeue_discard_first(error->dequeue);
+    zylib_private_dequeue_discard_first(obj->dequeue);
 }
 
-void zylib_error_discard_last(zylib_error_t *error)
+void zylib_error_discard_last(zylib_error_t *obj)
 {
-    zylib_dequeue_discard_last(error->dequeue);
+    zylib_private_dequeue_discard_last(obj->dequeue);
 }
 
-const zylib_error_box_t *zylib_error_peek_first(const zylib_error_t *error)
+const zylib_error_box_t *zylib_error_peek_first(const zylib_error_t *obj)
 {
-    return zylib_dequeue_peek_first(error->dequeue, NULL);
+    uint64_t size;
+    const void *data;
+    if (!zylib_private_dequeue_peek_first(obj->dequeue, &size, &data))
+    {
+        return NULL;
+    }
+    return data;
 }
 
-const zylib_error_box_t *zylib_error_peek_last(const zylib_error_t *error)
+const zylib_error_box_t *zylib_error_peek_last(const zylib_error_t *obj)
 {
-    return zylib_dequeue_peek_last(error->dequeue, NULL);
+    uint64_t size;
+    const void *data;
+    if (!zylib_private_dequeue_peek_last(obj->dequeue, &size, &data))
+    {
+        return NULL;
+    }
+    return data;
 }
 
-uint64_t zylib_error_size(const zylib_error_t *error)
+uint64_t zylib_error_size(const zylib_error_t *obj)
 {
-    return zylib_dequeue_size(error->dequeue);
+    return zylib_private_dequeue_size(obj->dequeue);
 }
 
-_Bool zylib_error_is_empty(const zylib_error_t *error)
+_Bool zylib_error_is_empty(const zylib_error_t *obj)
 {
-    return zylib_dequeue_is_empty(error->dequeue);
+    return zylib_private_dequeue_is_empty(obj->dequeue);
 }
 
-int64_t zylib_error_box_peek_code(const zylib_error_box_t *error_box)
+int64_t zylib_error_box_peek_code(const zylib_error_box_t *obj)
 {
-    return error_box->code;
+    return obj->code;
 }
 
-const char *zylib_error_box_peek_file(const zylib_error_box_t *error_box)
+const char *zylib_error_box_peek_file(const zylib_error_box_t *obj)
 {
-    return error_box->file;
+    return obj->file;
 }
 
-uint64_t zylib_error_box_peek_line_number(const zylib_error_box_t *error_box)
+uint64_t zylib_error_box_peek_line_number(const zylib_error_box_t *obj)
 {
-    return error_box->line;
+    return obj->line;
 }
 
-const char *zylib_error_box_peek_function(const zylib_error_box_t *error_box)
+const char *zylib_error_box_peek_function(const zylib_error_box_t *obj)
 {
-    return error_box->function;
+    return obj->function;
 }
 
-const void *zylib_error_box_peek_auxiliary_data(const zylib_error_box_t *error_box, uint64_t *p_size)
+const void *zylib_error_box_peek_auxiliary_data(const zylib_error_box_t *obj, uint64_t *size)
 {
-    if (error_box == NULL || error_box->size == 0)
+    if (obj == NULL || obj->size == 0)
     {
         return NULL;
     }
 
-    if (p_size != NULL)
+    if (size != NULL)
     {
-        *p_size = error_box->size;
+        *size = obj->size;
     }
 
-    return &((const uint8_t *)error_box)[sizeof(zylib_error_box_t)];
+    return &((const uint8_t *)obj)[sizeof(zylib_error_box_t)];
 }

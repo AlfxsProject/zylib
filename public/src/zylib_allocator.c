@@ -20,28 +20,28 @@
  * Functions
  */
 
-_Bool zylib_allocator_construct(zylib_allocator_t **allocator, zylib_allocator_malloc_t malloc,
+_Bool zylib_allocator_construct(zylib_allocator_t **obj, zylib_allocator_malloc_t malloc,
                                 zylib_allocator_realloc_t realloc, zylib_allocator_free_t free)
 {
-    return zylib_private_allocator_construct((zylib_private_allocator_t **)allocator, malloc, realloc, free);
+    return zylib_private_allocator_construct((zylib_private_allocator_t **)obj, malloc, realloc, free);
 }
 
-void zylib_allocator_destruct(zylib_allocator_t **allocator)
+void zylib_allocator_destruct(zylib_allocator_t **obj)
 {
-    zylib_private_allocator_destruct((zylib_private_allocator_t **)allocator);
+    zylib_private_allocator_destruct((zylib_private_allocator_t **)obj);
 }
 
-_Bool zylib_allocator_malloc(const zylib_allocator_t *allocator, size_t size, void **data)
+_Bool zylib_allocator_malloc(const zylib_allocator_t *obj, size_t size, void **data)
 {
-    return zylib_private_allocator_malloc((const zylib_private_allocator_t *)allocator, size, data);
+    return zylib_private_allocator_malloc((const zylib_private_allocator_t *)obj, size, data);
 }
 
-_Bool zylib_allocator_realloc(const zylib_allocator_t *allocator, size_t size, void **data)
+_Bool zylib_allocator_realloc(const zylib_allocator_t *obj, size_t size, void **data)
 {
-    return zylib_private_allocator_realloc((const zylib_private_allocator_t *)allocator, size, data);
+    return zylib_private_allocator_realloc((const zylib_private_allocator_t *)obj, size, data);
 }
 
-void zylib_allocator_free(const zylib_allocator_t *allocator, void **data)
+void zylib_allocator_free(const zylib_allocator_t *obj, void **data)
 {
-    zylib_private_allocator_free((const zylib_private_allocator_t *)allocator, data);
+    zylib_private_allocator_free((const zylib_private_allocator_t *)obj, data);
 }
