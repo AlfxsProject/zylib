@@ -78,30 +78,24 @@ void zylib_private_box_destruct(zylib_private_box_t **obj)
     }
 }
 
-_Bool zylib_private_box_append(zylib_private_box_t **obj, uint64_t size, const void *ptr)
+_Bool zylib_private_box_append(zylib_private_box_t *obj, uint64_t size, const void *ptr)
 {
-    _Bool r = 0;
+    _Bool r;
 
     uint64_t offset;
     uint64_t index;
     void *address = NULL;
 
-    if (*obj == NULL)
-    {
-        goto error;
-    }
-
-    r = zylib_private_allocator_realloc((*obj)->allocator, sizeof(zylib_private_box_t) + (*obj)->size + size,
-                                        &(*obj)->data);
+    r = zylib_private_allocator_realloc(obj->allocator, sizeof(zylib_private_box_t) + obj->size + size, &obj->data);
     if (!r)
     {
         goto error;
     }
 
-    index = (*obj)->size;
-    (*obj)->size += size;
+    index = obj->size;
+    obj->size += size;
 
-    r = zylib_box_get_address_by_index(*obj, index, &offset, &address);
+    r = zylib_box_get_address_by_index(obj, index, &offset, &address);
     if (!r)
     {
         goto error;
@@ -142,7 +136,7 @@ _Bool zylib_box_get_address_by_index_const(const zylib_private_box_t *box, uint6
     }
 
     *size = box->size - index;
-    *ptr = &((const uint8_t *)box->data)[index];
+    *ptr = &((const unsigned char *)box->data)[index];
 
     return 1;
 }

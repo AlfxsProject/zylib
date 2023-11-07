@@ -112,7 +112,7 @@ _Bool test_box()
         goto error;
     }
 
-    if (!zylib_private_box_append(&box, size_2, data_2))
+    if (!zylib_private_box_append(box, size_2, data_2))
     {
         PRINT_ERROR("zylib_private_box_append() failed");
         goto error;

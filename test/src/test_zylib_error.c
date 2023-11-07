@@ -193,15 +193,15 @@ _Bool test_push_peek(uint64_t before_size, zylib_error_push_t push, zylib_error_
 
     managed_box = peek(error);
 
-    if (code != zylib_error_box_peek_code(managed_box))
+    if (code != zylib_error_box_peek_error_code(managed_box))
     {
-        PRINT_ERROR("zylib_error_box_peek_code() failed");
+        PRINT_ERROR("zylib_error_box_peek_error_code() failed");
         goto error;
     }
 
-    if (strcmp(file, zylib_error_box_peek_file(managed_box)) != 0)
+    if (strcmp(file, zylib_error_box_peek_file_name(managed_box)) != 0)
     {
-        PRINT_ERROR("zylib_error_box_peek_file() failed");
+        PRINT_ERROR("zylib_error_box_peek_file_name() failed");
     }
 
     if (line != zylib_error_box_peek_line_number(managed_box))
@@ -210,9 +210,9 @@ _Bool test_push_peek(uint64_t before_size, zylib_error_push_t push, zylib_error_
         goto error;
     }
 
-    if (strcmp(function, zylib_error_box_peek_function(managed_box)) != 0)
+    if (strcmp(function, zylib_error_box_peek_function_name(managed_box)) != 0)
     {
-        PRINT_ERROR("zylib_error_box_peek_function() failed");
+        PRINT_ERROR("zylib_error_box_peek_function_name() failed");
         goto error;
     }
 

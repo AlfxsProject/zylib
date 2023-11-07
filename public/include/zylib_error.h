@@ -17,16 +17,8 @@
 #include "zylib_allocator.h"
 #include <stdint.h>
 
-/*
- * Types
- */
-
-typedef struct zylib_error_box_s zylib_error_box_t;
-typedef struct zylib_error_s zylib_error_t;
-
-/*
- * Functions
- */
+typedef void *zylib_error_box_t;
+typedef void *zylib_error_t;
 
 ZYLIB_BEGIN_DECLS
 
@@ -40,12 +32,12 @@ ZYLIB_NONNULL
 void zylib_error_clear(zylib_error_t *obj);
 
 ZYLIB_NONNULL
-_Bool zylib_error_push_first(zylib_error_t *obj, int64_t code, const char *file, uint64_t line, const char *function,
-                             uint64_t size, const void *p_void);
+_Bool zylib_error_push_first(zylib_error_t *obj, int64_t error_code, const char *file_name, uint64_t line_number,
+                             const char *function_name, uint64_t auxiliary_size, const void *auxiliary_data);
 
 ZYLIB_NONNULL
-_Bool zylib_error_push_last(zylib_error_t *obj, int64_t code, const char *file, uint64_t line, const char *function,
-                            uint64_t size, const void *p_void);
+_Bool zylib_error_push_last(zylib_error_t *obj, int64_t error_code, const char *file_name, uint64_t line_number,
+                            const char *function_name, uint64_t auxiliary_size, const void *auxiliary_data);
 
 ZYLIB_NONNULL
 void zylib_error_discard_first(zylib_error_t *obj);
@@ -66,16 +58,16 @@ ZYLIB_NONNULL
 _Bool zylib_error_is_empty(const zylib_error_t *obj);
 
 ZYLIB_NONNULL
-int64_t zylib_error_box_peek_code(const zylib_error_box_t *obj);
+int64_t zylib_error_box_peek_error_code(const zylib_error_box_t *obj);
 
 ZYLIB_NONNULL
-const char *zylib_error_box_peek_file(const zylib_error_box_t *obj);
+const char *zylib_error_box_peek_file_name(const zylib_error_box_t *obj);
 
 ZYLIB_NONNULL
 uint64_t zylib_error_box_peek_line_number(const zylib_error_box_t *obj);
 
 ZYLIB_NONNULL
-const char *zylib_error_box_peek_function(const zylib_error_box_t *obj);
+const char *zylib_error_box_peek_function_name(const zylib_error_box_t *obj);
 
 ZYLIB_NONNULL
 const void *zylib_error_box_peek_auxiliary_data(const zylib_error_box_t *obj, uint64_t *size);

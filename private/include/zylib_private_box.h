@@ -51,7 +51,7 @@ void zylib_private_box_destruct(zylib_private_box_t **obj);
  * @return True if and only if the operation was successful
  */
 ZYLIB_NONNULL
-_Bool zylib_private_box_append(zylib_private_box_t **obj, uint64_t size, const void *ptr);
+_Bool zylib_private_box_append(zylib_private_box_t *obj, uint64_t size, const void *ptr);
 
 /**
  * Retrieve the memory region denoted that begins at index
