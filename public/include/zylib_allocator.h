@@ -17,35 +17,73 @@
 #include "zylib_def.h"
 #include <stddef.h>
 
-/*
- * Type Definitions
+/**
+ * Allocator Data Structure
  */
-
 typedef void *zylib_allocator_t;
-typedef void *(*zylib_allocator_malloc_t)(size_t size);
-typedef void *(*zylib_allocator_realloc_t)(void *ptr, size_t size);
-typedef void (*zylib_allocator_free_t)(void *ptr);
 
-/*
- * Function Declarations
+/**
+ * Malloc Function Pointer Data Type
  */
+typedef void *(*zylib_allocator_malloc_t)(size_t size);
+
+/**
+ * Realloc Function Pointer Data Type
+ */
+typedef void *(*zylib_allocator_realloc_t)(void *ptr, size_t size);
+
+/**
+ * Free Function Pointer Data Type
+ */
+typedef void (*zylib_allocator_free_t)(void *ptr);
 
 ZYLIB_BEGIN_DECLS
 
+/**
+ * Construct an allocator object
+ * @param obj The object to construct
+ * @param malloc The malloc function pointer
+ * @param realloc The realloc function pointer
+ * @param free The free function pointer
+ * @return True if and only if the operation was successful
+ */
 ZYLIB_NONNULL
 _Bool zylib_allocator_construct(zylib_allocator_t **obj, zylib_allocator_malloc_t malloc,
                                 zylib_allocator_realloc_t realloc, zylib_allocator_free_t free);
 
+/**
+ * Deconstruct an allocator object
+ * @param obj The object to deconstruct
+ */
 ZYLIB_NONNULL
 void zylib_allocator_destruct(zylib_allocator_t **obj);
 
+/**
+ * Allocate a memory region
+ * @param obj The allocator object
+ * @param size The size of the region to allocate
+ * @param ptr The pointer to the address of the memory region
+ * @return True if and only if the operation was successful
+ */
 ZYLIB_NONNULL
-_Bool zylib_allocator_malloc(const zylib_allocator_t *obj, size_t size, void **data);
+_Bool zylib_allocator_malloc(const zylib_allocator_t *obj, size_t size, void **ptr);
 
+/**
+ * Resize an allocated memory region
+ * @param obj The allocator object
+ * @param size The new size of the memory region
+ * @param ptr The pointer to the address of the memory region
+ * @return True if and only if the operation was successful
+ */
 ZYLIB_NONNULL
-_Bool zylib_allocator_realloc(const zylib_allocator_t *obj, size_t size, void **data);
+_Bool zylib_allocator_realloc(const zylib_allocator_t *obj, size_t size, void **ptr);
 
+/**
+ * Deallocate a memory region
+ * @param obj The allocator object
+ * @param ptr The pointer to the memory region
+ */
 ZYLIB_NONNULL
-void zylib_allocator_free(const zylib_allocator_t *obj, void **data);
+void zylib_allocator_free(const zylib_allocator_t *obj, void **ptr);
 
 ZYLIB_END_DECLS
