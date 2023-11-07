@@ -19,21 +19,38 @@
 #include <stdlib.h>
 #include <string.h>
 
+/*
+ * Type Definitions
+ */
+
+typedef _Bool (*zylib_dequeue_push_t)(zylib_dequeue_t *, uint64_t, const void *);
+typedef _Bool (*zylib_dequeue_peek_t)(const zylib_dequeue_t *, uint64_t *, const void **);
+typedef void (*zylib_dequeue_discard_t)(zylib_dequeue_t *);
+
+/*
+ * Macros
+ */
+
 #define PRINT_ERROR(format, ...) ZYLIB_LOG_ERROR(log, format, ##__VA_ARGS__)
+
+/*
+ * Global Variables
+ */
 
 static zylib_log_t *log = NULL;
 static zylib_allocator_t *allocator = NULL;
 static zylib_dequeue_t *dequeue = NULL;
 
+/*
+ * Static Function Declarations
+ */
+
 /* Push, Peek */
-static inline _Bool test_push_peek(uint64_t before_size,
-                                   _Bool (*push)(zylib_dequeue_t *dequeue, uint64_t size, const void *p_void),
-                                   const void *(*peek)(const zylib_dequeue_t *dequeue, uint64_t *p_size));
+static inline _Bool test_push_peek(uint64_t before_size, zylib_dequeue_push_t push, zylib_dequeue_peek_t peek);
 
 /* Push, Peek, Discard */
-static inline _Bool test_push_peek_discard(_Bool (*push)(zylib_dequeue_t *dequeue, uint64_t size, const void *p_void),
-                                           const void *(*peek)(const zylib_dequeue_t *dequeue, uint64_t *p_size),
-                                           void (*discard)(zylib_dequeue_t *dequeue));
+static inline _Bool test_push_peek_discard(zylib_dequeue_push_t push, zylib_dequeue_peek_t peek,
+                                           zylib_dequeue_discard_t discard);
 
 /* Push First, Peek First, Discard First */
 static inline _Bool test_push_peek_discard_first();
@@ -42,15 +59,17 @@ static inline _Bool test_push_peek_discard_first();
 static inline _Bool test_push_peek_discard_last();
 
 /* Loop: Push, Peek; Clear */
-static inline _Bool test_loop_push_peek_clear(_Bool (*push)(zylib_dequeue_t *dequeue, uint64_t size,
-                                                            const void *p_void),
-                                              const void *(*peek)(const zylib_dequeue_t *dequeue, uint64_t *p_size));
+static inline _Bool test_loop_push_peek_clear(zylib_dequeue_push_t push, zylib_dequeue_peek_t peek);
 
 /* Loop: Push First, Peek First; Clear */
 static inline _Bool test_loop_push_peek_clear_first();
 
 /* Loop: Push Last, Peek Last; Clear */
 static inline _Bool test_loop_push_peek_clear_last();
+
+/*
+ * Main
+ */
 
 int main()
 {
@@ -131,8 +150,11 @@ error:
     return r;
 }
 
-_Bool test_push_peek(uint64_t before_size, _Bool (*push)(zylib_dequeue_t *dequeue, uint64_t size, const void *p_void),
-                     const void *(*peek)(const zylib_dequeue_t *dequeue, uint64_t *p_size))
+/*
+ * Static Function Definitions
+ */
+
+_Bool test_push_peek(uint64_t before_size, zylib_dequeue_push_t push, zylib_dequeue_peek_t peek)
 {
     _Bool r = 0;
 
@@ -152,7 +174,7 @@ _Bool test_push_peek(uint64_t before_size, _Bool (*push)(zylib_dequeue_t *dequeu
 
     if (!push(dequeue, ptr_size, ptr))
     {
-        PRINT_ERROR("zylib_dequeue_push_first() failed");
+        PRINT_ERROR("push() failed");
         goto error;
     }
 
@@ -162,11 +184,10 @@ _Bool test_push_peek(uint64_t before_size, _Bool (*push)(zylib_dequeue_t *dequeu
         goto error;
     }
 
-    managed_ptr = peek(dequeue, &managed_ptr_size);
-
-    if (managed_ptr_size != ptr_size || memcmp(ptr, managed_ptr, ptr_size) != 0)
+    if (!peek(dequeue, &managed_ptr_size, &managed_ptr) || managed_ptr_size != ptr_size ||
+        memcmp(ptr, managed_ptr, ptr_size) != 0)
     {
-        PRINT_ERROR("zylib_dequeue_peek_first() failed");
+        PRINT_ERROR("peek() failed");
         goto error;
     }
 
@@ -179,12 +200,16 @@ error:
     return r;
 }
 
-_Bool test_push_peek_discard(_Bool (*push)(zylib_dequeue_t *dequeue, uint64_t size, const void *p_void),
-                             const void *(*peek)(const zylib_dequeue_t *dequeue, uint64_t *p_size),
-                             void (*discard)(zylib_dequeue_t *dequeue))
+_Bool test_push_peek_discard(zylib_dequeue_push_t push, zylib_dequeue_peek_t peek, zylib_dequeue_discard_t discard)
 {
     size_t before_size = zylib_dequeue_size(dequeue);
     _Bool r = test_push_peek(before_size, push, peek);
+
+    if (!r)
+    {
+        PRINT_ERROR("test_push_peek() failed");
+        goto error;
+    }
 
     discard(dequeue);
 
@@ -206,8 +231,8 @@ _Bool test_push_peek_discard_last()
 {
     return test_push_peek_discard(zylib_dequeue_push_last, zylib_dequeue_peek_last, zylib_dequeue_discard_last);
 }
-_Bool test_loop_push_peek_clear(_Bool (*push)(zylib_dequeue_t *dequeue, uint64_t size, const void *p_void),
-                                const void *(*peek)(const zylib_dequeue_t *dequeue, uint64_t *p_size))
+
+_Bool test_loop_push_peek_clear(zylib_dequeue_push_t push, zylib_dequeue_peek_t peek)
 {
     _Bool r = 0;
 

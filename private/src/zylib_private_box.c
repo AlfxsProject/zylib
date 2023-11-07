@@ -25,14 +25,14 @@ struct zylib_private_box_s
 
 ZYLIB_NONNULL
 static inline _Bool zylib_box_get_address_by_index_const(const zylib_private_box_t *box, uint64_t index, uint64_t *size,
-                                                         const void **data);
+                                                         const void **ptr);
 
 ZYLIB_NONNULL
 static inline _Bool zylib_box_get_address_by_index(const zylib_private_box_t *box, uint64_t index, uint64_t *size,
-                                                   void **data);
+                                                   void **ptr);
 
 _Bool zylib_private_box_construct(zylib_private_box_t **obj, const zylib_private_allocator_t *allocator, uint64_t size,
-                                  const void *data)
+                                  const void *ptr)
 {
     _Bool r;
 
@@ -57,7 +57,7 @@ _Bool zylib_private_box_construct(zylib_private_box_t **obj, const zylib_private
     }
 
     (*obj)->size = size;
-    memcpy((*obj)->data, data, size);
+    memcpy((*obj)->data, ptr, size);
 
     goto done;
 error:
@@ -78,7 +78,7 @@ void zylib_private_box_destruct(zylib_private_box_t **obj)
     }
 }
 
-_Bool zylib_private_box_append(zylib_private_box_t **obj, uint64_t size, const void *data)
+_Bool zylib_private_box_append(zylib_private_box_t **obj, uint64_t size, const void *ptr)
 {
     _Bool r = 0;
 
@@ -107,15 +107,15 @@ _Bool zylib_private_box_append(zylib_private_box_t **obj, uint64_t size, const v
         goto error;
     }
 
-    memcpy(address, data, size);
+    memcpy(address, ptr, size);
 
 error:
     return r;
 }
 
-_Bool zylib_private_box_split_latter(const zylib_private_box_t *obj, uint64_t index, uint64_t *size, const void **data)
+_Bool zylib_private_box_split_by_index(const zylib_private_box_t *obj, uint64_t index, uint64_t *size, const void **ptr)
 {
-    return zylib_box_get_address_by_index_const(obj, index, size, data);
+    return zylib_box_get_address_by_index_const(obj, index, size, ptr);
 }
 
 uint64_t zylib_private_box_peek_size(const zylib_private_box_t *obj)
@@ -128,13 +128,13 @@ const void *zylib_private_box_peek_data(const zylib_private_box_t *obj)
     return obj->data;
 }
 
-_Bool zylib_box_get_address_by_index(const zylib_private_box_t *box, uint64_t index, uint64_t *size, void **data)
+_Bool zylib_box_get_address_by_index(const zylib_private_box_t *box, uint64_t index, uint64_t *size, void **ptr)
 {
-    return zylib_box_get_address_by_index_const(box, index, size, (const void **)data);
+    return zylib_box_get_address_by_index_const(box, index, size, (const void **)ptr);
 }
 
 _Bool zylib_box_get_address_by_index_const(const zylib_private_box_t *box, uint64_t index, uint64_t *size,
-                                           const void **data)
+                                           const void **ptr)
 {
     if (index >= box->size)
     {
@@ -142,7 +142,7 @@ _Bool zylib_box_get_address_by_index_const(const zylib_private_box_t *box, uint6
     }
 
     *size = box->size - index;
-    *data = &((const uint8_t *)box->data)[index];
+    *ptr = &((const uint8_t *)box->data)[index];
 
     return 1;
 }

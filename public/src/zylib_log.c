@@ -29,14 +29,10 @@ struct zylib_log_s
 _Bool zylib_log_construct(zylib_log_t **log, const zylib_allocator_t *alloc, FILE *file, zylib_log_severity_t severity,
                           zylib_log_format_t format)
 {
-    _Bool r = 0;
-    if (severity > ZYLIB_LOG_SEVERITY_MAX)
+    _Bool r;
+    if (severity > ZYLIB_LOG_SEVERITY_MAX || format > ZYLIB_LOG_OUTPUT_FORMAT_MAX)
     {
-        goto error;
-    }
-    if (format > ZYLIB_LOG_OUTPUT_FORMAT_MAX)
-    {
-        goto error;
+        return 0;
     }
     r = zylib_allocator_malloc(alloc, sizeof(zylib_log_t), (void **)log);
     if (r)
@@ -46,14 +42,6 @@ _Bool zylib_log_construct(zylib_log_t **log, const zylib_allocator_t *alloc, FIL
         (*log)->log_severity = severity;
         (*log)->log_format = format;
     }
-    goto done;
-error:
-    if (file != NULL)
-    {
-        fclose(file);
-        file = NULL;
-    }
-done:
     return r;
 }
 

@@ -30,37 +30,37 @@ struct zylib_private_allocator_s
  * Functions
  */
 
-_Bool zylib_private_allocator_construct(zylib_private_allocator_t **allocator, zylib_private_allocator_malloc_t malloc,
+_Bool zylib_private_allocator_construct(zylib_private_allocator_t **obj, zylib_private_allocator_malloc_t malloc,
                                         zylib_private_allocator_realloc_t realloc, zylib_private_allocator_free_t free)
 {
     _Bool r = 0;
 
-    *allocator = malloc(sizeof(zylib_private_allocator_t));
-    if (*allocator == NULL)
+    *obj = malloc(sizeof(zylib_private_allocator_t));
+    if (*obj == NULL)
     {
         goto error;
     }
 
-    (*allocator)->malloc = malloc;
-    (*allocator)->realloc = realloc;
-    (*allocator)->free = free;
+    (*obj)->malloc = malloc;
+    (*obj)->realloc = realloc;
+    (*obj)->free = free;
     r = 1;
 error:
     return r;
 }
 
-void zylib_private_allocator_destruct(zylib_private_allocator_t **allocator)
+void zylib_private_allocator_destruct(zylib_private_allocator_t **obj)
 {
-    if (*allocator == NULL)
+    if (*obj == NULL)
     {
         return;
     }
 
-    (*allocator)->free((void *)*allocator);
-    *allocator = NULL;
+    (*obj)->free((void *)*obj);
+    *obj = NULL;
 }
 
-_Bool zylib_private_allocator_malloc(const zylib_private_allocator_t *allocator, size_t size, void **data)
+_Bool zylib_private_allocator_malloc(const zylib_private_allocator_t *obj, size_t size, void **ptr)
 {
     _Bool r = 0;
 
@@ -69,8 +69,8 @@ _Bool zylib_private_allocator_malloc(const zylib_private_allocator_t *allocator,
         return 0;
     }
 
-    *data = allocator->malloc(size);
-    if (*data == NULL)
+    *ptr = obj->malloc(size);
+    if (*ptr == NULL)
     {
         goto error;
     }
@@ -80,35 +80,33 @@ error:
     return r;
 }
 
-_Bool zylib_private_allocator_realloc(const zylib_private_allocator_t *allocator, size_t size, void **data)
+_Bool zylib_private_allocator_realloc(const zylib_private_allocator_t *obj, size_t size, void **ptr)
 {
     _Bool r = 0;
-    void *ptr = NULL;
+    void *x_ptr = NULL;
 
-    if (size <= 0 || *data == NULL)
+    if (size <= 0 || *ptr == NULL)
     {
         return 0;
     }
 
-    ptr = allocator->realloc(*data, size);
-    if (ptr == NULL)
+    x_ptr = obj->realloc(*ptr, size);
+    if (x_ptr == NULL)
     {
         goto error;
     }
-    *data = ptr;
+    *ptr = x_ptr;
 
     r = 1;
 error:
     return r;
 }
 
-void zylib_private_allocator_free(const zylib_private_allocator_t *allocator, void **data)
+void zylib_private_allocator_free(const zylib_private_allocator_t *obj, void **ptr)
 {
-    if (*data == NULL)
+    if (*ptr != NULL)
     {
-        return;
+        obj->free(*ptr);
+        *ptr = NULL;
     }
-
-    allocator->free(*data);
-    *data = NULL;
 }

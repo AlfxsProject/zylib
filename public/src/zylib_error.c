@@ -56,7 +56,8 @@ static _Bool zylib_error_push(zylib_error_t *error, int64_t code, const char *fi
         goto error;
     }
 
-    r = zylib_private_box_construct(&box, error->allocator, sizeof(zylib_error_box_t), &error_box);
+    r = zylib_private_box_construct(&box, (const zylib_private_allocator_t *)error->allocator,
+                                    sizeof(zylib_error_box_t), &error_box);
     if (!r)
     {
         goto error;
@@ -92,11 +93,6 @@ _Bool zylib_error_construct(zylib_error_t **obj, const zylib_allocator_t *alloca
 {
     _Bool r;
 
-    if (obj == NULL || allocator == NULL)
-    {
-        return 0;
-    }
-
     *obj = NULL;
     r = zylib_allocator_malloc(allocator, sizeof(zylib_error_t), (void **)obj);
     if (!r)
@@ -128,13 +124,11 @@ done:
 
 void zylib_error_destruct(zylib_error_t **obj)
 {
-    if (obj == NULL || *obj == NULL)
+    if (*obj != NULL)
     {
-        return;
+        zylib_private_dequeue_destruct(&(*obj)->dequeue);
+        zylib_allocator_free((*obj)->allocator, (void **)obj);
     }
-
-    zylib_private_dequeue_destruct(&(*obj)->dequeue);
-    zylib_allocator_free((*obj)->allocator, (void **)obj);
 }
 
 void zylib_error_clear(zylib_error_t *obj)
@@ -218,15 +212,10 @@ const char *zylib_error_box_peek_function(const zylib_error_box_t *obj)
 
 const void *zylib_error_box_peek_auxiliary_data(const zylib_error_box_t *obj, uint64_t *size)
 {
-    if (obj == NULL || obj->size == 0)
-    {
-        return NULL;
-    }
-
-    if (size != NULL)
+    if (obj->size != 0)
     {
         *size = obj->size;
+        return &((const uint8_t *)obj)[sizeof(zylib_error_box_t)];
     }
-
-    return &((const uint8_t *)obj)[sizeof(zylib_error_box_t)];
+    return NULL;
 }

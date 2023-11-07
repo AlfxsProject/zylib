@@ -131,10 +131,10 @@ _Bool test_box()
         goto error;
     }
 
-    if (!zylib_private_box_split_latter(box, size_1, &managed_size, &managed_data) || managed_size != size_2 ||
+    if (!zylib_private_box_split_by_index(box, size_1, &managed_size, &managed_data) || managed_size != size_2 ||
         memcmp(data_2, managed_data, size_2) != 0)
     {
-        PRINT_ERROR("zylib_private_box_split_latter() failed");
+        PRINT_ERROR("zylib_private_box_split_by_index() failed");
         goto error;
     }
 

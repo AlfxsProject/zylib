@@ -20,35 +20,53 @@
 #include <stdlib.h>
 #include <string.h>
 
+/*
+ * Type Definitions
+ */
+
+typedef _Bool (*zylib_error_push_t)(zylib_error_t *, int64_t, const char *, uint64_t, const char *, uint64_t,
+                                    const void *);
+
+typedef const zylib_error_box_t *(*zylib_error_peek_t)(const zylib_error_t *);
+
+typedef void (*zylib_error_discard_t)(zylib_error_t *);
+
+/*
+ * Macros
+ */
+
 #define PRINT_ERROR(format, ...) ZYLIB_LOG_ERROR(log, format, ##__VA_ARGS__)
+
+/*
+ * Global Variables
+ */
 
 static zylib_log_t *log = NULL;
 static zylib_allocator_t *allocator = NULL;
 static zylib_error_t *error = NULL;
 
-static inline _Bool test_push_peek(uint64_t before_size,
-                                   _Bool (*push)(zylib_error_t *error, int64_t code, const char *file, uint64_t line,
-                                                 const char *function, uint64_t size, const void *p_void),
-                                   const zylib_error_box_t *(*peek)(const zylib_error_t *error));
+/*
+ * Static Function Declarations
+ */
 
-static inline _Bool test_push_peek_discard(_Bool (*push)(zylib_error_t *error, int64_t code, const char *file,
-                                                         uint64_t line, const char *function, uint64_t size,
-                                                         const void *p_void),
-                                           const zylib_error_box_t *(*peek)(const zylib_error_t *error),
-                                           void (*discard)(zylib_error_t *error));
+static inline _Bool test_push_peek(uint64_t before_size, zylib_error_push_t push, zylib_error_peek_t peek);
+
+static inline _Bool test_push_peek_discard(zylib_error_push_t push, zylib_error_peek_t peek,
+                                           zylib_error_discard_t discard);
 
 static inline _Bool test_push_peek_discard_first();
 
 static inline _Bool test_push_peek_discard_last();
 
-static inline _Bool test_loop_push_peek_clear(_Bool (*push)(zylib_error_t *error, int64_t code, const char *file,
-                                                            uint64_t line, const char *function, uint64_t size,
-                                                            const void *p_void),
-                                              const zylib_error_box_t *(*peek)(const zylib_error_t *error));
+static inline _Bool test_loop_push_peek_clear(zylib_error_push_t push, zylib_error_peek_t peek);
 
 static inline _Bool test_loop_push_peek_clear_first();
 
 static inline _Bool test_loop_push_peek_clear_last();
+
+/*
+ * Main
+ */
 
 int main()
 {
@@ -129,10 +147,11 @@ error:
     return r;
 }
 
-_Bool test_push_peek(uint64_t before_size,
-                     _Bool (*push)(zylib_error_t *error, int64_t code, const char *file, uint64_t line,
-                                   const char *function, uint64_t size, const void *p_void),
-                     const zylib_error_box_t *(*peek)(const zylib_error_t *error))
+/*
+ * Static Function Definitions
+ */
+
+_Bool test_push_peek(uint64_t before_size, zylib_error_push_t push, zylib_error_peek_t peek)
 {
     _Bool r = 0;
 
@@ -214,11 +233,8 @@ error:
     return r;
 }
 
-static inline _Bool test_push_peek_discard(_Bool (*push)(zylib_error_t *error, int64_t code, const char *file,
-                                                         uint64_t line, const char *function, uint64_t size,
-                                                         const void *p_void),
-                                           const zylib_error_box_t *(*peek)(const zylib_error_t *error),
-                                           void (*discard)(zylib_error_t *error))
+static inline _Bool test_push_peek_discard(zylib_error_push_t push, zylib_error_peek_t peek,
+                                           zylib_error_discard_t discard)
 {
     size_t before_size = zylib_error_size(error);
     _Bool r = test_push_peek(before_size, push, peek);
@@ -244,9 +260,7 @@ _Bool test_push_peek_discard_last()
     return test_push_peek_discard(zylib_error_push_last, zylib_error_peek_last, zylib_error_discard_last);
 }
 
-_Bool test_loop_push_peek_clear(_Bool (*push)(zylib_error_t *error, int64_t code, const char *file, uint64_t line,
-                                              const char *function, uint64_t size, const void *p_void),
-                                const zylib_error_box_t *(*peek)(const zylib_error_t *error))
+_Bool test_loop_push_peek_clear(zylib_error_push_t push, zylib_error_peek_t peek)
 {
     _Bool r = 0;
 

@@ -21,16 +21,37 @@ typedef void *zylib_dequeue_t;
 
 ZYLIB_BEGIN_DECLS
 
+ZYLIB_NONNULL
 _Bool zylib_dequeue_construct(zylib_dequeue_t **obj, const zylib_allocator_t *allocator);
+
+ZYLIB_NONNULL
 void zylib_dequeue_destruct(zylib_dequeue_t **obj);
+
+ZYLIB_NONNULL
 void zylib_dequeue_clear(zylib_dequeue_t *obj);
+
+ZYLIB_NONNULL
 _Bool zylib_dequeue_push_first(zylib_dequeue_t *obj, uint64_t size, const void *data);
+
+ZYLIB_NONNULL
 _Bool zylib_dequeue_push_last(zylib_dequeue_t *obj, uint64_t size, const void *data);
+
+ZYLIB_NONNULL
 void zylib_dequeue_discard_first(zylib_dequeue_t *obj);
+
+ZYLIB_NONNULL
 void zylib_dequeue_discard_last(zylib_dequeue_t *obj);
-const void *zylib_dequeue_peek_first(const zylib_dequeue_t *obj, uint64_t *size);
-const void *zylib_dequeue_peek_last(const zylib_dequeue_t *obj, uint64_t *size);
+
+ZYLIB_NONNULL
+_Bool zylib_dequeue_peek_first(const zylib_dequeue_t *obj, uint64_t *size, const void **data);
+
+ZYLIB_NONNULL
+_Bool zylib_dequeue_peek_last(const zylib_dequeue_t *obj, uint64_t *size, const void **data);
+
+ZYLIB_NONNULL
 uint64_t zylib_dequeue_size(const zylib_dequeue_t *obj);
+
+ZYLIB_NONNULL
 _Bool zylib_dequeue_is_empty(const zylib_dequeue_t *obj);
 
 ZYLIB_END_DECLS
