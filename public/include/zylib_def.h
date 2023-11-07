@@ -40,3 +40,9 @@
 #else
 #define ZYLIB_NONNULL
 #endif
+
+#if defined(__GNUC__)
+#define ZYLIB_NONNULL_N(n) __attribute__((nonnull(n)))
+#else
+#define ZYLIB_NONNULL_N(n)
+#endif

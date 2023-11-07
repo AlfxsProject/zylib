@@ -31,11 +31,15 @@ void zylib_error_destruct(zylib_error_t **obj);
 ZYLIB_NONNULL
 void zylib_error_clear(zylib_error_t *obj);
 
-ZYLIB_NONNULL
+ZYLIB_NONNULL_N(1)
+ZYLIB_NONNULL_N(3)
+ZYLIB_NONNULL_N(5)
 _Bool zylib_error_push_first(zylib_error_t *obj, int64_t error_code, const char *file_name, uint64_t line_number,
                              const char *function_name, uint64_t auxiliary_size, const void *auxiliary_data);
 
-ZYLIB_NONNULL
+ZYLIB_NONNULL_N(1)
+ZYLIB_NONNULL_N(3)
+ZYLIB_NONNULL_N(5)
 _Bool zylib_error_push_last(zylib_error_t *obj, int64_t error_code, const char *file_name, uint64_t line_number,
                             const char *function_name, uint64_t auxiliary_size, const void *auxiliary_data);
 
