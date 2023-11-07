@@ -95,8 +95,12 @@ const char *zylib_error_box_peek_function_name(const zylib_error_box_t *obj)
     return zylib_private_error_box_peek_function_name((const zylib_private_error_box_t *)obj);
 }
 
-const void *zylib_error_box_peek_auxiliary_data(const zylib_error_box_t *obj, uint64_t *size)
+uint64_t zylib_error_box_peek_auxiliary_size(const zylib_error_box_t *obj)
 {
-    *size = zylib_private_error_box_peek_auxiliary_size((const zylib_private_error_box_t *)obj);
+    return zylib_private_error_box_peek_auxiliary_size((const zylib_private_error_box_t *)obj);
+}
+
+const void *zylib_error_box_peek_auxiliary_data(const zylib_error_box_t *obj)
+{
     return zylib_private_error_box_peek_auxiliary_data((const zylib_private_error_box_t *)obj);
 }

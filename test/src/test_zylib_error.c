@@ -164,7 +164,7 @@ _Bool test_push_peek(uint64_t before_size, zylib_error_push_t push, zylib_error_
     size_t ptr_size = 1;
 
     const zylib_error_box_t *managed_box = NULL;
-    uint64_t managed_ptr_size = 0;
+    uint64_t managed_ptr_size;
     const void *managed_ptr = NULL;
 
     if (!zylib_allocator_malloc(allocator, ptr_size, &ptr))
@@ -216,7 +216,8 @@ _Bool test_push_peek(uint64_t before_size, zylib_error_push_t push, zylib_error_
         goto error;
     }
 
-    managed_ptr = zylib_error_box_peek_auxiliary_data(managed_box, &managed_ptr_size);
+    managed_ptr_size = zylib_error_box_peek_auxiliary_size(managed_box);
+    managed_ptr = zylib_error_box_peek_auxiliary_data(managed_box);
 
     if (managed_ptr_size != ptr_size || memcmp(ptr, managed_ptr, ptr_size) != 0)
     {
