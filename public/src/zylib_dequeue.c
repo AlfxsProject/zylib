@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 #include "zylib_dequeue.h"
-#include "zylib_private_box.h"
 #include "zylib_private_dequeue.h"
 #include <assert.h>
 
