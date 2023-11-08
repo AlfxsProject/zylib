@@ -10,8 +10,8 @@ set(SOURCES public/include/zylib_allocator.h
         public/include/zylib_def.h
         public/include/zylib_dequeue.h
         public/src/zylib_dequeue.c
-        public/include/zylib_log.h
-        public/src/zylib_log.c
+        public/include/zylib_logger.h
+        public/src/zylib_logger.c
         public/include/zylib_error.h
         public/src/zylib_error.c
         private/include/zylib_private_box.h

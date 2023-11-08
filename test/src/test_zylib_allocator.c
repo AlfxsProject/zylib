@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 #include "zylib_allocator.h"
-#include "zylib_log.h"
+#include "zylib_logger.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define PRINT_ERROR(format, ...) ZYLIB_LOG_ERROR(log, format, ##__VA_ARGS__)
+#define PRINT_ERROR(format, ...) ZYLIB_LOGGER_ERROR(log, format, ##__VA_ARGS__)
 
 static zylib_allocator_t *allocator = NULL;
-static zylib_log_t *log = NULL;
+static zylib_logger_t *log = NULL;
 
 static inline _Bool test_region(void *ptr, size_t size, int chr);
 static inline _Bool test_malloc_free(size_t m_size);
@@ -39,9 +39,9 @@ int main()
         goto error;
     }
 
-    if (!zylib_log_construct(&log, allocator, stderr, ZYLIB_INFO, ZYLIB_LOG_FORMAT_PLAIN))
+    if (!zylib_logger_construct(&log, allocator, stderr, ZYLIB_INFO, ZYLIB_LOGGER_FORMAT_PLAINTEXT))
     {
-        fprintf(stderr, "zylib_log_construct() failed\n");
+        fprintf(stderr, "zylib_logger_construct() failed\n");
         goto error;
     }
 
@@ -71,7 +71,7 @@ int main()
 error:
     if (log != NULL)
     {
-        zylib_log_destruct(&log);
+        zylib_logger_destruct(&log);
     }
     if (allocator != NULL)
     {

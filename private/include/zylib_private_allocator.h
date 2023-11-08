@@ -25,17 +25,17 @@ typedef struct zylib_private_allocator_s zylib_private_allocator_t;
 /**
  * Malloc Function Pointer Data Type
  */
-typedef void *(*zylib_private_allocator_malloc_t)(size_t size);
+typedef void *(*zylib_private_allocator_malloc_t)(size_t);
 
 /**
  * Realloc Function Pointer Data Type
  */
-typedef void *(*zylib_private_allocator_realloc_t)(void *ptr, size_t size);
+typedef void *(*zylib_private_allocator_realloc_t)(void *, size_t);
 
 /**
  * Free Function Pointer Data Type
  */
-typedef void (*zylib_private_allocator_free_t)(void *ptr);
+typedef void (*zylib_private_allocator_free_t)(void *);
 
 ZYLIB_BEGIN_DECLS
 
