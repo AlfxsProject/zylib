@@ -15,78 +15,8 @@
  */
 #pragma once
 #include "zylib_allocator.h"
+#include "zylib_logger_def.h"
 #include <stdio.h>
-
-/**
- * Logger Data Structure
- */
-typedef struct zylib_logger_s zylib_logger_t;
-
-/**
- * Logger Severity Data Type.
- * Highest => 0.
- */
-typedef enum zylib_logger_severity_e
-{
-    /**
-     * Irrecoverable Error
-     */
-    ZYLIB_FATAL,
-    /**
-     * Recoverable Error
-     */
-    ZYLIB_ERROR,
-    /**
-     * Warning
-     */
-    ZYLIB_WARN,
-    /**
-     * Informational
-     */
-    ZYLIB_INFO
-} zylib_logger_severity_t;
-
-/**
- * Logger Output Format
- */
-typedef enum zylib_logger_format_e
-{
-    /**
-     * Human Readable (text)
-     */
-    ZYLIB_LOGGER_FORMAT_PLAINTEXT,
-    /**
-     * Comma-Separated Values (CSV)
-     */
-    ZYLIB_LOGGER_FORMAT_CSV,
-    /**
-     * Extensible Markup Format (XML)
-     */
-    ZYLIB_LOGGER_FORMAT_XML
-} zylib_logger_format_t;
-
-/**
- * The Lowest Defined Logger Severity.
- */
-#define ZYLIB_LOGGER_SEVERITY_LOWEST (ZYLIB_INFO)
-
-/**
- * The Highest Defined Logger Severity.
- */
-#define ZYLIB_LOGGER_SEVERITY_HIGHEST (ZYLIB_FATAL)
-
-#define ZYLIB_LOGGER_FORMAT_LAST (ZYLIB_LOGGER_FORMAT_XML)
-
-#define ZYLIB_LOGGER_MAX_MESSAGE_SIZE_DEFAULT (1024U)
-#define ZYLIB_LOGGER_TIME_FORMAT_DEFAULT ("%a %b %d %H:%M:%S %Z %Y")
-
-/* DATE FILE:LINE (FUNCTION) [SEVERITY] MESSAGE\n */
-#define ZYLIB_LOGGER_PLAINTEXT_FORMAT_DEFAULT ("%s %s:%zu (%s) [%s] %s\n")
-/* DATE,FILE,LINE,FUNCTION,SEVERITY,MESSAGE */
-#define ZYLIB_LOGGER_CSV_FORMAT_DEFAULT ("%s,%s,%zu,%s,%s,%s\n")
-#define ZYLIB_LOGGER_XML_FORMAT_DEFAULT                                                                                \
-    ("<message severity='%s'><date>%s</date><location file='%s' line='%zu' "                                           \
-     "function='%s'/><text>%s</text></message>\n")
 
 #define ZYLIB_LOGGER_ERROR(log, format, ...)                                                                           \
     zylib_logger_write(log, ZYLIB_ERROR, __FILE__, __LINE__, __func__, format, ##__VA_ARGS__)

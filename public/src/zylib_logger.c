@@ -30,7 +30,7 @@ _Bool zylib_logger_construct(zylib_logger_t **log, const zylib_allocator_t *allo
                              zylib_logger_severity_t severity, zylib_logger_format_t format)
 {
     _Bool r;
-    if (severity > ZYLIB_LOGGER_SEVERITY_LOWEST || format > ZYLIB_LOGGER_FORMAT_LAST)
+    if (severity >= ZYLIB_LOGGER_SEVERITY_N || format >= ZYLIB_LOGGER_FORMAT_N)
     {
         return 0;
     }
@@ -65,8 +65,8 @@ size_t zylib_logger_write(const zylib_logger_t *log, zylib_logger_severity_t sev
     {
         char *user_message = NULL, *log_message = NULL;
         size_t r = 0;
-        if (zylib_allocator_malloc(log->alloc, ZYLIB_LOGGER_MAX_MESSAGE_SIZE_DEFAULT, (void **)&user_message) &&
-            zylib_allocator_malloc(log->alloc, ZYLIB_LOGGER_MAX_MESSAGE_SIZE_DEFAULT, (void **)&log_message))
+        if (zylib_allocator_malloc(log->alloc, ZYLIB_LOGGER_MAX_MESSAGE_SIZE, (void **)&user_message) &&
+            zylib_allocator_malloc(log->alloc, ZYLIB_LOGGER_MAX_MESSAGE_SIZE, (void **)&log_message))
         {
             static const char *error_string = "";
             char date_buf[120] = {0};
@@ -76,7 +76,7 @@ size_t zylib_logger_write(const zylib_logger_t *log, zylib_logger_severity_t sev
             time_t now;
 
             va_start(args, format);
-            vsnprintf(user_message, ZYLIB_LOGGER_MAX_MESSAGE_SIZE_DEFAULT, format, args);
+            vsnprintf(user_message, ZYLIB_LOGGER_MAX_MESSAGE_SIZE, format, args);
             va_end(args);
 
             switch (severity)
@@ -93,6 +93,8 @@ size_t zylib_logger_write(const zylib_logger_t *log, zylib_logger_severity_t sev
             case ZYLIB_INFO:
                 error_string = "INFO";
                 break;
+            case ZYLIB_LOGGER_SEVERITY_N:
+                goto no_print;
             }
 
             now = time(NULL);
@@ -107,30 +109,30 @@ size_t zylib_logger_write(const zylib_logger_t *log, zylib_logger_severity_t sev
                 goto write;
             }
 
-            strftime(date_buf, sizeof(date_buf), ZYLIB_LOGGER_TIME_FORMAT_DEFAULT, &tm);
+            strftime(date_buf, sizeof(date_buf), ZYLIB_LOGGER_TIME_FORMAT, &tm);
 
         write:
             switch (log->log_format)
             {
             case ZYLIB_LOGGER_FORMAT_CSV:
-                offset = (size_t)snprintf(log_message, ZYLIB_LOGGER_MAX_MESSAGE_SIZE_DEFAULT,
-                                          ZYLIB_LOGGER_CSV_FORMAT_DEFAULT, date_buf, file, line, function, error_string,
-                                          user_message);
+                offset = (size_t)snprintf(log_message, ZYLIB_LOGGER_MAX_MESSAGE_SIZE, ZYLIB_LOGGER_CSV_FORMAT, date_buf,
+                                          file, line, function, error_string, user_message);
                 break;
             case ZYLIB_LOGGER_FORMAT_XML:
-                offset = (size_t)snprintf(log_message, ZYLIB_LOGGER_MAX_MESSAGE_SIZE_DEFAULT,
-                                          ZYLIB_LOGGER_XML_FORMAT_DEFAULT, error_string, date_buf, file, line, function,
-                                          user_message);
+                offset = (size_t)snprintf(log_message, ZYLIB_LOGGER_MAX_MESSAGE_SIZE, ZYLIB_LOGGER_XML_FORMAT,
+                                          error_string, date_buf, file, line, function, user_message);
                 break;
             case ZYLIB_LOGGER_FORMAT_PLAINTEXT:
-                offset = (size_t)snprintf(log_message, ZYLIB_LOGGER_MAX_MESSAGE_SIZE_DEFAULT,
-                                          ZYLIB_LOGGER_PLAINTEXT_FORMAT_DEFAULT, date_buf, file, line, function,
-                                          error_string, user_message);
+                offset = (size_t)snprintf(log_message, ZYLIB_LOGGER_MAX_MESSAGE_SIZE, ZYLIB_LOGGER_PLAINTEXT_FORMAT,
+                                          date_buf, file, line, function, error_string, user_message);
                 break;
+            case ZYLIB_LOGGER_FORMAT_N:
+                goto no_print;
             }
 
             r = (size_t)fwrite(log_message, 1, offset, log->log_file);
         }
+    no_print:
         if (user_message != NULL)
         {
             zylib_allocator_free(log->alloc, (void **)&user_message);
