@@ -21,17 +21,17 @@
 
 struct zylib_private_allocator_s
 {
-    zylib_private_allocator_malloc_t malloc;
-    zylib_private_allocator_realloc_t realloc;
-    zylib_private_allocator_free_t free;
+    zylib_allocator_malloc_t malloc;
+    zylib_allocator_realloc_t realloc;
+    zylib_allocator_free_t free;
 };
 
 /*
  * Functions
  */
 
-_Bool zylib_private_allocator_construct(zylib_private_allocator_t **obj, zylib_private_allocator_malloc_t malloc,
-                                        zylib_private_allocator_realloc_t realloc, zylib_private_allocator_free_t free)
+_Bool zylib_private_allocator_construct(zylib_private_allocator_t **obj, zylib_allocator_malloc_t malloc,
+                                        zylib_allocator_realloc_t realloc, zylib_allocator_free_t free)
 {
     _Bool r = 0;
 

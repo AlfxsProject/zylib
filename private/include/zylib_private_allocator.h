@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+#include "zylib_allocator_def.h"
 #include "zylib_def.h"
 #include <stddef.h>
 
@@ -21,21 +22,6 @@
  * Allocator Data Structure
  */
 typedef struct zylib_private_allocator_s zylib_private_allocator_t;
-
-/**
- * Malloc Function Pointer Data Type
- */
-typedef void *(*zylib_private_allocator_malloc_t)(size_t);
-
-/**
- * Realloc Function Pointer Data Type
- */
-typedef void *(*zylib_private_allocator_realloc_t)(void *, size_t);
-
-/**
- * Free Function Pointer Data Type
- */
-typedef void (*zylib_private_allocator_free_t)(void *);
 
 ZYLIB_BEGIN_DECLS
 
@@ -48,8 +34,8 @@ ZYLIB_BEGIN_DECLS
  * @return True if and only if the operation was successful
  */
 ZYLIB_NONNULL
-_Bool zylib_private_allocator_construct(zylib_private_allocator_t **obj, zylib_private_allocator_malloc_t malloc,
-                                        zylib_private_allocator_realloc_t realloc, zylib_private_allocator_free_t free);
+_Bool zylib_private_allocator_construct(zylib_private_allocator_t **obj, zylib_allocator_malloc_t malloc,
+                                        zylib_allocator_realloc_t realloc, zylib_allocator_free_t free);
 
 /**
  * Deconstruct an allocator object

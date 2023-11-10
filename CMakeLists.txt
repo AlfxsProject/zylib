@@ -21,7 +21,8 @@ set(SOURCES public/include/zylib_allocator.h
         private/include/zylib_private_dequeue.h
         private/src/zylib_private_dequeue.c
         private/include/zylib_private_error.h
-        private/src/zylib_private_error.c)
+        private/src/zylib_private_error.c
+        public/include/zylib_allocator_def.h)
 
 add_library(zylib STATIC ${SOURCES})
 target_include_directories(zylib PUBLIC public/include PRIVATE private/include)

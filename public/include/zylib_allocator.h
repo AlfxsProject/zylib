@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+#include "zylib_allocator_def.h"
 #include "zylib_def.h"
 #include <stddef.h>
 
@@ -21,21 +22,6 @@
  * Allocator Data Structure
  */
 typedef void *zylib_allocator_t;
-
-/**
- * Malloc Function Pointer Data Type
- */
-typedef void *(*zylib_allocator_malloc_t)(size_t size);
-
-/**
- * Realloc Function Pointer Data Type
- */
-typedef void *(*zylib_allocator_realloc_t)(void *ptr, size_t size);
-
-/**
- * Free Function Pointer Data Type
- */
-typedef void (*zylib_allocator_free_t)(void *ptr);
 
 ZYLIB_BEGIN_DECLS
 
