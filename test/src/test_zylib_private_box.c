@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define PRINT_ERROR(format, ...) ZYLIB_LOGGER_ERROR(log, format, ##__VA_ARGS__)
+#define PRINT_ERROR(format) ZYLIB_LOGGER_ERROR(log, format)
 
 static zylib_allocator_t *allocator = NULL;
 static zylib_logger_t *log = NULL;

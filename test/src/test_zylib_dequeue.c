@@ -31,7 +31,7 @@ typedef void (*zylib_dequeue_discard_t)(zylib_dequeue_t *);
  * Macros
  */
 
-#define PRINT_ERROR(format, ...) ZYLIB_LOGGER_ERROR(log, format, ##__VA_ARGS__)
+#define PRINT_ERROR(format) ZYLIB_LOGGER_ERROR(log, format)
 
 /*
  * Global Variables
@@ -77,19 +77,19 @@ int main()
 
     if (!zylib_allocator_construct(&allocator, malloc, realloc, free))
     {
-        fprintf(stderr, "zylib_allocator_construct()\n");
+        fprintf(stderr, "zylib_allocator_construct() failed\n");
         goto error;
     }
 
     if (!zylib_logger_construct(&log, allocator, stderr, ZYLIB_INFO, ZYLIB_LOGGER_FORMAT_PLAINTEXT))
     {
-        fprintf(stderr, "zylib_logger_construct()\n");
+        fprintf(stderr, "zylib_logger_construct() failed\n");
         goto error;
     }
 
     if (!zylib_dequeue_construct(&dequeue, allocator))
     {
-        PRINT_ERROR("zylib_dequeue_construct()");
+        PRINT_ERROR("zylib_dequeue_construct() failed");
         goto error;
     }
 

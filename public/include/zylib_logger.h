@@ -18,12 +18,49 @@
 #include "zylib_logger_def.h"
 #include <stdio.h>
 
-#define ZYLIB_LOGGER_ERROR(log, format, ...)                                                                           \
-    zylib_logger_write(log, ZYLIB_ERROR, __FILE__, __LINE__, __func__, format, ##__VA_ARGS__)
-#define ZYLIB_LOGGER_WARN(log, format, ...)                                                                            \
-    zylib_logger_write(log, ZYLIB_WARN, __FILE__, __LINE__, __func__, format, ##__VA_ARGS__)
-#define ZYLIB_LOGGER_INFO(log, format, ...)                                                                            \
-    zylib_logger_write(log, ZYLIB_INFO, __FILE__, __LINE__, __func__, format, ##__VA_ARGS__)
+/**
+ * Print Fatal Error Message Formatted String
+ */
+#define ZYLIB_LOGGER_FATAL_F(log, format, ...)                                                                         \
+    zylib_logger_write(log, ZYLIB_FATAL, __FILE__, __LINE__, __func__, format, __VA_ARGS__)
+
+/**
+ * Print Fatal Error Message String
+ */
+#define ZYLIB_LOGGER_FATAL(log, string) zylib_logger_write(log, ZYLIB_FATAL, __FILE__, __LINE__, __func__, format)
+
+/**
+ * Print Error Message Formatted String
+ */
+#define ZYLIB_LOGGER_ERROR_F(log, format, ...)                                                                         \
+    zylib_logger_write(log, ZYLIB_ERROR, __FILE__, __LINE__, __func__, format, __VA_ARGS__)
+
+/**
+ * Print Error Message String
+ */
+#define ZYLIB_LOGGER_ERROR(log, format) zylib_logger_write(log, ZYLIB_ERROR, __FILE__, __LINE__, __func__, format)
+
+/**
+ * Print Warning Message Formatted String
+ */
+#define ZYLIB_LOGGER_WARN_F(log, format, ...)                                                                          \
+    zylib_logger_write(log, ZYLIB_WARN, __FILE__, __LINE__, __func__, format, __VA_ARGS__)
+
+/**
+ * Print Warning Message String
+ */
+#define ZYLIB_LOGGER_WARN(log, format) zylib_logger_write(log, ZYLIB_WARN, __FILE__, __LINE__, __func__, format)
+
+/**
+ * Print Informational Message Formatted String
+ */
+#define ZYLIB_LOGGER_INFO_F(log, format, ...)                                                                          \
+    zylib_logger_write(log, ZYLIB_INFO, __FILE__, __LINE__, __func__, format, __VA_ARGS__)
+
+/**
+ * Print Informational Message String
+ */
+#define ZYLIB_LOGGER_INFO(log, format) zylib_logger_write(log, ZYLIB_INFO, __FILE__, __LINE__, __func__, format)
 
 ZYLIB_BEGIN_DECLS
 
