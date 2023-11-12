@@ -16,6 +16,7 @@
 #pragma once
 #include "zylib_allocator.h"
 #include "zylib_logger_def.h"
+#include <stdint.h>
 #include <stdio.h>
 
 /**
@@ -73,7 +74,7 @@ void zylib_logger_destruct(zylib_logger_t **log);
 
 ZYLIB_PRINTF_LIKE(6, 7)
 ZYLIB_NONNULL
-size_t zylib_logger_write(const zylib_logger_t *log, zylib_logger_severity_t severity, const char *file, size_t line,
-                          const char *function, const char *format, ...);
+uint64_t zylib_logger_write(const zylib_logger_t *log, zylib_logger_severity_t severity, const char *file,
+                            uint64_t line, const char *function, const char *format, ...);
 
 ZYLIB_END_DECLS
