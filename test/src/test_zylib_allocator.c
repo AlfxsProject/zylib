@@ -25,6 +25,12 @@
 static zylib_allocator_t *allocator = NULL;
 static zylib_logger_t *log = NULL;
 
+static inline _Bool logger_filter(zylib_logger_severity_t severity)
+{
+    (void)(severity);
+    return 1;
+}
+
 static inline _Bool test_region(void *ptr, size_t size, int chr);
 static inline _Bool test_malloc_free(size_t m_size);
 static inline _Bool test_malloc_realloc_free(size_t m_size, size_t r_size);
@@ -39,7 +45,7 @@ int main()
         goto error;
     }
 
-    if (!zylib_logger_construct(&log, allocator, stderr, ZYLIB_INFO, ZYLIB_LOGGER_FORMAT_PLAINTEXT))
+    if (!zylib_logger_construct(&log, allocator, stderr, ZYLIB_LOGGER_FORMAT_PLAINTEXT, logger_filter))
     {
         fprintf(stderr, "zylib_logger_construct() failed\n");
         goto error;

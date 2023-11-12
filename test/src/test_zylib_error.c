@@ -49,6 +49,12 @@ static zylib_error_t *error = NULL;
  * Static Function Declarations
  */
 
+static inline _Bool logger_filter(zylib_logger_severity_t severity)
+{
+    (void)(severity);
+    return 1;
+}
+
 static inline _Bool test_push_peek(uint64_t before_size, zylib_error_push_t push, zylib_error_peek_t peek);
 
 static inline _Bool test_push_peek_discard(zylib_error_push_t push, zylib_error_peek_t peek,
@@ -78,7 +84,7 @@ int main()
         goto error;
     }
 
-    if (!zylib_logger_construct(&log, allocator, stderr, ZYLIB_INFO, ZYLIB_LOGGER_FORMAT_PLAINTEXT))
+    if (!zylib_logger_construct(&log, allocator, stderr, ZYLIB_LOGGER_FORMAT_PLAINTEXT, logger_filter))
     {
         fprintf(stderr, "zylib_logger_construct() failed\n");
         goto error;

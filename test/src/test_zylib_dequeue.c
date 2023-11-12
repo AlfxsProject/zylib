@@ -45,6 +45,12 @@ static zylib_dequeue_t *dequeue = NULL;
  * Static Function Declarations
  */
 
+static inline _Bool logger_filter(zylib_logger_severity_t severity)
+{
+    (void)(severity);
+    return 1;
+}
+
 /* Push, Peek */
 static inline _Bool test_push_peek(uint64_t before_size, zylib_dequeue_push_t push, zylib_dequeue_peek_t peek);
 
@@ -81,7 +87,7 @@ int main()
         goto error;
     }
 
-    if (!zylib_logger_construct(&log, allocator, stderr, ZYLIB_INFO, ZYLIB_LOGGER_FORMAT_PLAINTEXT))
+    if (!zylib_logger_construct(&log, allocator, stderr, ZYLIB_LOGGER_FORMAT_PLAINTEXT, logger_filter))
     {
         fprintf(stderr, "zylib_logger_construct() failed\n");
         goto error;

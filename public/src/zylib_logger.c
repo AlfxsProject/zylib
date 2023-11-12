@@ -22,15 +22,16 @@
 struct zylib_logger_s
 {
     const zylib_allocator_t *allocator;
-    FILE *logger_file;
-    zylib_logger_severity_t logger_severity;
-    zylib_logger_format_t logger_format;
+    FILE *file;
+    zylib_logger_filter_t filter;
+    zylib_logger_format_t format;
 };
 
 static const char *severity_string[] = {"FATAL", "ERROR", "WARNING", "INFO"};
 
-static inline uint64_t zylib_logger_send_message(const zylib_logger_t *log, zylib_logger_severity_t severity,
-                                                 const char *file, uint64_t line, const char *function,
+ZYLIB_NONNULL
+static inline uint64_t zylib_logger_send_message(const zylib_logger_t *logger, zylib_logger_severity_t severity,
+                                                 const char *file_name, uint64_t line_number, const char *function_name,
                                                  const char *display_message)
 {
     char date_buf[120] = {0};
@@ -53,49 +54,49 @@ static inline uint64_t zylib_logger_send_message(const zylib_logger_t *log, zyli
     strftime(date_buf, sizeof(date_buf), ZYLIB_LOGGER_TIME_FORMAT, &tm);
 
 send:
-    switch (log->logger_format)
+    switch (logger->format)
     {
     case ZYLIB_LOGGER_FORMAT_CSV:
-        size = (uint64_t)fprintf(log->logger_file, ZYLIB_LOGGER_CSV_FORMAT, date_buf, file, line, function,
+        size = (uint64_t)fprintf(logger->file, ZYLIB_LOGGER_CSV_FORMAT, date_buf, file_name, line_number, function_name,
                                  severity_string[severity], display_message);
         break;
     case ZYLIB_LOGGER_FORMAT_XML:
-        size = (uint64_t)fprintf(log->logger_file, ZYLIB_LOGGER_XML_FORMAT, severity_string[severity], date_buf, file,
-                                 line, function, display_message);
+        size = (uint64_t)fprintf(logger->file, ZYLIB_LOGGER_XML_FORMAT, severity_string[severity], date_buf, file_name,
+                                 line_number, function_name, display_message);
         break;
     case ZYLIB_LOGGER_FORMAT_PLAINTEXT:
-        size = (uint64_t)fprintf(log->logger_file, ZYLIB_LOGGER_PLAINTEXT_FORMAT, date_buf, file, line, function,
-                                 severity_string[severity], display_message);
+        size = (uint64_t)fprintf(logger->file, ZYLIB_LOGGER_PLAINTEXT_FORMAT, date_buf, file_name, line_number,
+                                 function_name, severity_string[severity], display_message);
         break;
     }
     return size;
 }
 
-_Bool zylib_logger_construct(zylib_logger_t **log, const zylib_allocator_t *alloc, FILE *file,
-                             zylib_logger_severity_t severity, zylib_logger_format_t format)
+_Bool zylib_logger_construct(zylib_logger_t **logger, const zylib_allocator_t *alloc, FILE *file,
+                             zylib_logger_format_t format, zylib_logger_filter_t filter)
 {
     _Bool r;
-    if (severity >= ZYLIB_LOGGER_SEVERITY_N || format >= ZYLIB_LOGGER_FORMAT_N)
+    if (format >= ZYLIB_LOGGER_FORMAT_N)
     {
         return 0;
     }
-    r = zylib_allocator_malloc(alloc, sizeof(zylib_logger_t), (void **)log);
+    r = zylib_allocator_malloc(alloc, sizeof(zylib_logger_t), (void **)logger);
     if (r)
     {
-        (*log)->allocator = alloc;
-        (*log)->logger_file = file;
-        (*log)->logger_severity = severity;
-        (*log)->logger_format = format;
+        (*logger)->allocator = alloc;
+        (*logger)->file = file;
+        (*logger)->format = format;
+        (*logger)->filter = filter;
     }
     return r;
 }
 
-void zylib_logger_destruct(zylib_logger_t **log)
+void zylib_logger_destruct(zylib_logger_t **logger)
 {
-    if (*log != NULL)
+    if (*logger != NULL)
     {
-        fclose((*log)->logger_file);
-        zylib_allocator_free((const zylib_allocator_t *)(*log)->allocator, (void **)log);
+        fclose((*logger)->file);
+        zylib_allocator_free((const zylib_allocator_t *)(*logger)->allocator, (void **)logger);
     }
 }
 
@@ -103,16 +104,16 @@ void zylib_logger_destruct(zylib_logger_t **log)
  * Print message
  * TIME, FILE, LINE, FUNCTION, SEVERITY, MESSAGE
  */
-uint64_t zylib_logger_write(const zylib_logger_t *log, zylib_logger_severity_t severity, const char *file,
-                            uint64_t line, const char *function, const char *format, ...)
+uint64_t zylib_logger_write(const zylib_logger_t *logger, zylib_logger_severity_t severity, const char *file_name,
+                            uint64_t line_number, const char *function_name, const char *format, ...)
 {
-    if (severity <= log->logger_severity)
+    if (logger->filter(severity))
     {
         uint64_t r = 0;
         va_list args;
         char *display_message = NULL;
 
-        if (!zylib_allocator_malloc(log->allocator, ZYLIB_LOGGER_MAX_MESSAGE_SIZE, (void **)&display_message))
+        if (!zylib_allocator_malloc(logger->allocator, ZYLIB_LOGGER_MAX_MESSAGE_SIZE, (void **)&display_message))
         {
             goto error;
         }
@@ -121,11 +122,11 @@ uint64_t zylib_logger_write(const zylib_logger_t *log, zylib_logger_severity_t s
         vsnprintf(display_message, ZYLIB_LOGGER_MAX_MESSAGE_SIZE, format, args);
         va_end(args);
 
-        r = zylib_logger_send_message(log, severity, file, line, function, display_message);
+        r = zylib_logger_send_message(logger, severity, file_name, line_number, function_name, display_message);
     error:
         if (display_message != NULL)
         {
-            zylib_allocator_free(log->allocator, (void **)&display_message);
+            zylib_allocator_free(logger->allocator, (void **)&display_message);
         }
         return r;
     }

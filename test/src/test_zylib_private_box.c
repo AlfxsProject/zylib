@@ -25,6 +25,12 @@ static zylib_logger_t *log = NULL;
 
 static inline _Bool test_box();
 
+static inline _Bool logger_filter(zylib_logger_severity_t severity)
+{
+    (void)(severity);
+    return 1;
+}
+
 int main()
 {
     int r = EXIT_FAILURE;
@@ -35,7 +41,7 @@ int main()
         goto error;
     }
 
-    if (!zylib_logger_construct(&log, allocator, stderr, ZYLIB_INFO, ZYLIB_LOGGER_FORMAT_PLAINTEXT))
+    if (!zylib_logger_construct(&log, allocator, stderr, ZYLIB_LOGGER_FORMAT_PLAINTEXT, logger_filter))
     {
         fprintf(stderr, "zylib_logger_construct() failed\n");
         goto error;

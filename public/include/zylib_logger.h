@@ -65,16 +65,25 @@
 
 ZYLIB_BEGIN_DECLS
 
+/**
+ * Construct a logger object
+ * @param logger The pointer to the logger object
+ * @param alloc The allocator object
+ * @param file The logger file
+ * @param format The logger output format
+ * @param filter The logger output filter
+ * @return True if and only if the operation was successful
+ */
 ZYLIB_NONNULL
-_Bool zylib_logger_construct(zylib_logger_t **log, const zylib_allocator_t *alloc, FILE *file,
-                             zylib_logger_severity_t severity, zylib_logger_format_t format);
+_Bool zylib_logger_construct(zylib_logger_t **logger, const zylib_allocator_t *alloc, FILE *file,
+                             zylib_logger_format_t format, zylib_logger_filter_t filter);
 
 ZYLIB_NONNULL
-void zylib_logger_destruct(zylib_logger_t **log);
+void zylib_logger_destruct(zylib_logger_t **logger);
 
 ZYLIB_PRINTF_LIKE(6, 7)
 ZYLIB_NONNULL
-uint64_t zylib_logger_write(const zylib_logger_t *log, zylib_logger_severity_t severity, const char *file,
-                            uint64_t line, const char *function, const char *format, ...);
+uint64_t zylib_logger_write(const zylib_logger_t *logger, zylib_logger_severity_t severity, const char *file_name,
+                            uint64_t line_number, const char *function_name, const char *format, ...);
 
 ZYLIB_END_DECLS

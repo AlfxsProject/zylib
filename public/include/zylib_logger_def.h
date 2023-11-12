@@ -71,6 +71,8 @@ typedef enum zylib_logger_format_e
     ZYLIB_LOGGER_FORMAT_N
 } zylib_logger_format_t;
 
+typedef _Bool (*zylib_logger_filter_t)(zylib_logger_severity_t severity);
+
 /**
  * Format Maximum Message Size
  */
