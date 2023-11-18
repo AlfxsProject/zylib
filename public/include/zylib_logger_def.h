@@ -16,11 +16,6 @@
 #pragma once
 
 /**
- * Logger Data Structure
- */
-typedef struct zylib_logger_s zylib_logger_t;
-
-/**
  * Logger Severity Data Type.
  * Highest => 0.
  */

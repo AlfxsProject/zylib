@@ -20,6 +20,11 @@
 #include <stdio.h>
 
 /**
+ * Logger Data Structure
+ */
+typedef void *zylib_logger_t;
+
+/**
  * Print Fatal Error Message Formatted String
  */
 #define ZYLIB_LOGGER_FATAL_F(log, format, ...)                                                                         \
