@@ -15,17 +15,24 @@
  */
 #include "zylib_logger.h"
 #include "zylib_private_logger.h"
+#include <assert.h>
 #include <stdarg.h>
 
 _Bool zylib_logger_construct(zylib_logger_t **logger, const zylib_allocator_t *alloc, FILE *file,
                              zylib_logger_format_t format, zylib_logger_filter_t filter)
 {
+    assert(logger != NULL);
+    assert(alloc != NULL);
+    assert(file != NULL);
+    assert(format < ZYLIB_LOGGER_FORMAT_N);
+    assert(filter != NULL);
     return zylib_private_logger_construct((zylib_private_logger_t **)logger, (const zylib_private_allocator_t *)alloc,
                                           file, format, filter);
 }
 
 void zylib_logger_destruct(zylib_logger_t **logger)
 {
+    assert(logger != NULL);
     zylib_private_logger_destruct((zylib_private_logger_t **)logger);
 }
 
@@ -38,6 +45,13 @@ uint64_t zylib_logger_write(const zylib_logger_t *logger, zylib_logger_severity_
 {
     uint64_t r;
     va_list args;
+
+    assert(logger != NULL);
+    assert(severity < ZYLIB_LOGGER_SEVERITY_N);
+    assert(file_name != NULL);
+    assert(function_name != NULL);
+    assert(format != NULL);
+
     va_start(args, format);
     r = zylib_private_logger_write((const zylib_private_logger_t *)logger, severity, file_name, line_number,
                                    function_name, format, args);
