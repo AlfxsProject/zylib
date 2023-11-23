@@ -96,7 +96,6 @@ void zylib_private_logger_destruct(zylib_private_logger_t **logger)
 {
     if (*logger != NULL)
     {
-        fclose((*logger)->file);
         zylib_private_allocator_free((const zylib_private_allocator_t *)(*logger)->allocator, (void **)logger);
     }
 }
