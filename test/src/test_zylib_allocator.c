@@ -15,7 +15,6 @@
  */
 #include "zylib_allocator.h"
 #include "zylib_logger.h"
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
